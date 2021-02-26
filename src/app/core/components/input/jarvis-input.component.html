@@ -1,0 +1,55 @@
+<div class="jv-input-container" [ngClass]="classes">
+  <input
+    class="jarvis-input-cls"
+    [type]="type"
+    [placeholder]="placeholder"
+    [id]="id"
+    [name]="name"
+    [min]="min"
+    [max]="max"
+    [pattern]="pattern"
+    [title]="title"
+    [autofocus]="autofocus"
+    [autocomplete]="autocomplete"
+    [required]="required"
+    [ngClass]="{
+      'has-content':
+        (controlDir.control.value && controlDir.control.value.length > 0) ||
+        placeholder,
+      style4: styleType === 'style4',
+      style3: styleType === 'style3',
+      style2: styleType === 'style2',
+      style1: styleType === 'style1',
+      style5: styleType === 'style5',
+      style6: styleType === 'style6',
+      style7: styleType === 'style7',
+      style8: styleType === 'style8',
+      style9: styleType === 'style9'
+    }"
+    (input)="onChange($event.target.value)"
+    (blur)="blur.emit($event)"
+    (focus)="focus.emit($event)"
+    (change)="change.emit($event)"
+    (select)="select.emit($event)"
+    (keyup)="keyup.emit($event)"
+    (keydown)="keydown.emit($event)"
+    (keypress)="change.emit($event)"
+    #input
+  />
+  <label>{{ label }}</label>
+  <span
+    [ngClass]="{
+      'focus-bg':
+        styleType === 'style4' ||
+        styleType === 'style8' ||
+        styleType === 'style9',
+      'focus-border':
+        styleType === 'style1' ||
+        styleType === 'style2' ||
+        styleType === 'style3' ||
+        styleType === 'style5' ||
+        styleType === 'style6' ||
+        styleType === 'style7'
+    }"
+  ></span>
+</div>

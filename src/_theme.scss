@@ -1,0 +1,19 @@
+$pallettes: (
+  light-theme: (
+    container-color: red,
+    inner-color: blue,
+  ),
+  dark-theme: (
+    container-color: black,
+    inner-color: gray,
+  ),
+);
+
+@each $pallette, $content in $pallettes {
+  .main.#{$pallette} {
+    background-color: map-get($content, container-color);
+    .inner-div {
+      background-color: map-get($content, inner-color);
+    }
+  }
+}
