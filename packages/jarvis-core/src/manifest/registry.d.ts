@@ -1,4 +1,0 @@
-import type { SourceComponentManifestEntry } from './types';
-export declare const requiredJarvisComponentTags: readonly ["jarvis-button", "jarvis-icon-button", "jarvis-input", "jarvis-textarea", "jarvis-checkbox", "jarvis-radio", "jarvis-switch", "jarvis-select", "jarvis-combobox", "jarvis-badge", "jarvis-alert", "jarvis-toast", "jarvis-card", "jarvis-tabs", "jarvis-accordion", "jarvis-tooltip", "jarvis-dialog", "jarvis-drawer", "jarvis-popover", "jarvis-dropdown-menu", "jarvis-breadcrumb", "jarvis-pagination", "jarvis-progress", "jarvis-spinner", "jarvis-skeleton", "jarvis-avatar", "jarvis-chip", "jarvis-list", "jarvis-divider", "jarvis-surface", "jarvis-stack", "jarvis-grid", "jarvis-section", "jarvis-toolbar", "jarvis-empty-state"];
-export declare const componentManifestRegistry: SourceComponentManifestEntry[];
-//# sourceMappingURL=registry.d.ts.map
