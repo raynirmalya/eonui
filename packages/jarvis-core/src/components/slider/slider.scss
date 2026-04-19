@@ -1,0 +1,232 @@
+:host {
+  display: block;
+  --percent: 50%;
+}
+
+.slider {
+  display: grid;
+  gap: 0.7rem;
+}
+
+.slider.readonly {
+  opacity: 0.94;
+}
+
+.label {
+  display: inline-flex;
+  gap: 0.28rem;
+  align-items: center;
+  color: var(--jarvis-semantic-text-secondary);
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+
+.required-indicator {
+  color: rgb(185, 28, 28);
+}
+
+.track-wrap {
+  position: relative;
+  min-height: 2.35rem;
+  padding-block: 1.15rem 0.2rem;
+}
+
+.slider.with-tick-labels .track-wrap {
+  min-height: 4rem;
+  padding-bottom: 1.5rem;
+}
+
+.track,
+.range {
+  position: absolute;
+  top: 1.35rem;
+  height: 0.35rem;
+  border-radius: 999px;
+  transform: translateY(-50%);
+}
+
+.track {
+  left: 0;
+  right: 0;
+  background: rgba(148, 163, 184, 0.28);
+}
+
+.range {
+  left: 0;
+  width: var(--percent);
+  background: var(--jarvis-semantic-action-primaryBg);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--jarvis-semantic-action-primaryBg) 25%, transparent);
+}
+
+.ticks {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.tick {
+  position: absolute;
+  top: 1.35rem;
+  transform: translate(-50%, -50%);
+}
+
+.tick-line {
+  display: block;
+  width: 1px;
+  height: 0.7rem;
+  background: rgba(148, 163, 184, 0.45);
+}
+
+.tick-label {
+  position: absolute;
+  top: 0.95rem;
+  left: 50%;
+  color: var(--jarvis-semantic-text-tertiary);
+  font-size: 0.74rem;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+
+input[type='range'] {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  margin: 0;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+.slider.readonly input[type='range'] {
+  cursor: default;
+}
+
+.slider.disabled input[type='range'] {
+  cursor: not-allowed;
+}
+
+input[type='range']::-webkit-slider-runnable-track {
+  height: 0.35rem;
+  background: transparent;
+}
+
+input[type='range']::-moz-range-track {
+  height: 0.35rem;
+  background: transparent;
+}
+
+input[type='range']::-moz-range-progress {
+  background: transparent;
+}
+
+input[type='range']::-webkit-slider-thumb {
+  width: 1rem;
+  height: 1rem;
+  margin-top: -0.33rem;
+  appearance: none;
+  border: 2px solid #fff;
+  border-radius: 999px;
+  background: var(--jarvis-semantic-action-primaryBg);
+  box-shadow: 0 10px 22px rgba(29, 78, 216, 0.24);
+}
+
+input[type='range']::-moz-range-thumb {
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid #fff;
+  border-radius: 999px;
+  background: var(--jarvis-semantic-action-primaryBg);
+  box-shadow: 0 10px 22px rgba(29, 78, 216, 0.24);
+}
+
+input[type='range']:focus {
+  outline: none;
+}
+
+input[type='range']:focus-visible::-webkit-slider-thumb {
+  box-shadow: 0 0 0 0.28rem rgba(37, 99, 235, 0.18), 0 10px 22px rgba(29, 78, 216, 0.24);
+}
+
+input[type='range']:focus-visible::-moz-range-thumb {
+  box-shadow: 0 0 0 0.28rem rgba(37, 99, 235, 0.18), 0 10px 22px rgba(29, 78, 216, 0.24);
+}
+
+.slider.no-fill .range {
+  display: none;
+}
+
+.slider.no-fill .tick-line {
+  background: rgba(148, 163, 184, 0.55);
+}
+
+.slider.invalid .track {
+  background: rgba(220, 38, 38, 0.14);
+}
+
+.slider.invalid .range {
+  background: rgb(220, 38, 38);
+  box-shadow: 0 0 0 1px rgba(220, 38, 38, 0.2);
+}
+
+.slider.invalid input[type='range']::-webkit-slider-thumb {
+  background: rgb(220, 38, 38);
+  box-shadow: 0 10px 22px rgba(220, 38, 38, 0.24);
+}
+
+.slider.invalid input[type='range']::-moz-range-thumb {
+  background: rgb(220, 38, 38);
+  box-shadow: 0 10px 22px rgba(220, 38, 38, 0.24);
+}
+
+.slider.readonly input[type='range']::-webkit-slider-thumb {
+  background: var(--jarvis-semantic-text-tertiary);
+  box-shadow: 0 10px 22px rgba(15, 23, 42, 0.12);
+}
+
+.slider.readonly input[type='range']::-moz-range-thumb {
+  background: var(--jarvis-semantic-text-tertiary);
+  box-shadow: 0 10px 22px rgba(15, 23, 42, 0.12);
+}
+
+.slider.disabled .track,
+.slider.disabled .range,
+.slider.disabled .tick-line {
+  opacity: 0.55;
+}
+
+.tooltip {
+  position: absolute;
+  left: var(--percent);
+  bottom: calc(100% + 0.75rem);
+  padding: 0.3rem 0.5rem;
+  border-radius: 0.55rem;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: var(--jarvis-semantic-shadow-soft);
+  color: var(--jarvis-semantic-text-primary);
+  font-size: 0.8rem;
+  transform: translateX(-50%);
+}
+
+.range-labels {
+  display: flex;
+  justify-content: space-between;
+  color: var(--jarvis-semantic-text-tertiary);
+  font-size: 0.82rem;
+}
+
+.messages {
+  display: grid;
+  gap: 0.32rem;
+}
+
+.help-text {
+  color: var(--jarvis-semantic-text-tertiary);
+  font-size: 0.84rem;
+  line-height: 1.45;
+}
+
+.error-text {
+  color: rgb(185, 28, 28);
+  font-size: 0.84rem;
+  line-height: 1.45;
+}

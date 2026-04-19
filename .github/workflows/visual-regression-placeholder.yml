@@ -1,0 +1,11 @@
+name: Visual Regression Placeholder
+
+on:
+  workflow_dispatch:
+
+jobs:
+  placeholder:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Visual regression workflow placeholder. Integrate Storybook snapshots or Playwright later."
+

@@ -1,0 +1,22 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "composite": true,
+    "rootDir": "./src",
+    "outDir": "./dist/types",
+    "jsx": "react",
+    "jsxFactory": "h",
+    "jsxFragmentFactory": "Fragment",
+    "types": ["node", "@stencil/core"],
+    "strictPropertyInitialization": false
+  },
+  "references": [
+    { "path": "../a11y" },
+    { "path": "../icons" },
+    { "path": "../i18n" },
+    { "path": "../styles" },
+    { "path": "../tokens" },
+    { "path": "../utils" }
+  ],
+  "include": ["src"]
+}

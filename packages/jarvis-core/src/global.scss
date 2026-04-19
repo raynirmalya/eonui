@@ -1,0 +1,82 @@
+:root {
+  --jarvis-semantic-surface-canvas: #f6f7fb;
+  --jarvis-semantic-surface-sunken: #eef2f8;
+  --jarvis-semantic-surface-raised: rgba(255, 255, 255, 0.82);
+  --jarvis-semantic-surface-overlay: rgba(255, 255, 255, 0.72);
+  --jarvis-semantic-text-primary: #111827;
+  --jarvis-semantic-text-secondary: #5f6b7d;
+  --jarvis-semantic-text-tertiary: #8a94a6;
+  --jarvis-semantic-action-primaryBg: #1d4ed8;
+  --jarvis-semantic-action-primaryBgHover: #1e40af;
+  --jarvis-semantic-action-primaryText: #ffffff;
+  --jarvis-semantic-border-default: rgba(148, 163, 184, 0.2);
+  --jarvis-semantic-border-strong: rgba(99, 115, 139, 0.28);
+  --jarvis-semantic-focus-ring: rgba(59, 130, 246, 0.24);
+  --jarvis-semantic-focus-line: rgba(29, 78, 216, 0.7);
+  --jarvis-semantic-glow-soft: rgba(59, 130, 246, 0.12);
+  --jarvis-semantic-shadow-ambient: 0 24px 60px rgba(15, 23, 42, 0.08);
+  --jarvis-semantic-shadow-soft:
+    0 1px 1px rgba(15, 23, 42, 0.02),
+    0 10px 30px rgba(15, 23, 42, 0.06);
+  --jarvis-semantic-shadow-hover:
+    0 1px 1px rgba(15, 23, 42, 0.03),
+    0 18px 42px rgba(15, 23, 42, 0.1);
+  --jarvis-component-button-paddingX: 1.1rem;
+  --jarvis-component-button-paddingY: 0.72rem;
+  --jarvis-component-button-radius: 0.95rem;
+  --jarvis-component-field-height: 3.1rem;
+  --jarvis-component-surface-padding: 1.25rem;
+  --jarvis-font-sans: 'Inter', 'IBM Plex Sans', 'Segoe UI', sans-serif;
+  --jarvis-font-display: 'Inter', 'IBM Plex Sans', 'Segoe UI', sans-serif;
+  --jarvis-motion-ease-premium: cubic-bezier(0.22, 1, 0.36, 1);
+  --jarvis-motion-fast: 160ms;
+  --jarvis-motion-base: 220ms;
+  --jarvis-motion-slow: 320ms;
+  --jarvis-backdrop-blur: blur(22px);
+}
+
+html,
+body {
+  margin: 0;
+  color: var(--jarvis-semantic-text-primary);
+  background: var(--jarvis-semantic-surface-canvas);
+  font-family: var(--jarvis-font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html {
+  background:
+    radial-gradient(circle at top left, rgba(59, 130, 246, 0.09), transparent 28rem),
+    radial-gradient(circle at top right, rgba(14, 165, 233, 0.08), transparent 24rem),
+    linear-gradient(180deg, #fbfcfe 0%, #f4f7fb 100%);
+}
+
+body {
+  min-height: 100vh;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+::selection {
+  background: rgba(59, 130, 246, 0.18);
+}
+
+:focus-visible {
+  outline: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+    scroll-behavior: auto !important;
+  }
+}

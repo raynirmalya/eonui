@@ -1,0 +1,20 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "composite": true,
+    "rootDir": "./src",
+    "outDir": "./dist"
+  },
+  "references": [
+    { "path": "../../packages/a11y" },
+    { "path": "../../packages/jarvis-manifest" },
+    { "path": "../../packages/jarvis-react" },
+    { "path": "../../packages/jarvis-angular" },
+    { "path": "../../packages/i18n" },
+    { "path": "../../packages/jarvis-vue" },
+    { "path": "../../packages/styles" },
+    { "path": "../../packages/mystique-components" },
+    { "path": "../../packages/mystique-core" }
+  ],
+  "include": ["src/**/*"]
+}

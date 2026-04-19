@@ -1,0 +1,9 @@
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--grid-min, 16rem)), 1fr));
+  gap: var(--grid-gap, 1rem);
+}
+
+:host {
+  display: block;
+}

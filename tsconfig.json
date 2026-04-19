@@ -1,20 +1,29 @@
-/* To learn more about this file see: https://angular.io/config/tsconfig. */
 {
-  "compileOnSave": false,
-  "compilerOptions": {
-    "baseUrl": "./",
-    "outDir": "./dist/out-tsc",
-    "sourceMap": true,
-    "declaration": false,
-    "downlevelIteration": true,
-    "experimentalDecorators": true,
-    "moduleResolution": "node",
-    "importHelpers": true,
-    "target": "es2015",
-    "module": "es2020",
-    "lib": [
-      "es2018",
-      "dom"
-    ]
-  }
+  "files": [],
+  "references": [
+    { "path": "./packages/tokens" },
+    { "path": "./packages/styles" },
+    { "path": "./packages/utils" },
+    { "path": "./packages/a11y" },
+    { "path": "./packages/i18n" },
+    { "path": "./packages/icons" },
+    { "path": "./packages/jarvis-manifest" },
+    { "path": "./packages/jarvis-ai-prompts" },
+    { "path": "./packages/jarvis-core" },
+    { "path": "./packages/jarvis-react" },
+    { "path": "./packages/jarvis-angular" },
+    { "path": "./packages/jarvis-vue" },
+    { "path": "./packages/mystique-core" },
+    { "path": "./packages/mystique-svg" },
+    { "path": "./packages/mystique-canvas" },
+    { "path": "./packages/mystique-components" },
+    { "path": "./packages/test-utils" },
+    { "path": "./apps/docs" },
+    { "path": "./apps/storybook" },
+    { "path": "./apps/playground" },
+    { "path": "./apps/figma-mapper" },
+    { "path": "./tools/generators" },
+    { "path": "./tools/codemods" },
+    { "path": "./tools/release" }
+  ]
 }

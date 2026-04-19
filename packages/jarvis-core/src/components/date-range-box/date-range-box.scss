@@ -1,0 +1,145 @@
+:host {
+  display: block;
+}
+
+.field {
+  display: grid;
+  gap: 0.7rem;
+}
+
+.label {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: var(--jarvis-semantic-text-secondary);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.required-indicator {
+  color: rgb(185, 28, 28);
+}
+
+.inputs {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.input-shell {
+  display: grid;
+  gap: 0.35rem;
+  color: var(--jarvis-semantic-text-secondary);
+  font-size: 0.82rem;
+}
+
+.input-shell > span {
+  display: block;
+}
+
+.input-shell.invalid input {
+  border-color: rgba(220, 38, 38, 0.5);
+  box-shadow: 0 0 0 4px rgba(254, 226, 226, 0.8);
+}
+
+.input-shell.readonly input {
+  background: rgba(248, 250, 252, 0.9);
+  color: var(--jarvis-semantic-text-secondary);
+}
+
+input {
+  width: 100%;
+  min-height: var(--jarvis-component-field-height);
+  padding: 0 1rem;
+  border: 1px solid var(--jarvis-semantic-border-default);
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.84);
+  color: var(--jarvis-semantic-text-primary);
+  font: inherit;
+  box-shadow: var(--jarvis-semantic-shadow-soft);
+}
+
+input:focus {
+  outline: none;
+  border-color: rgba(59, 130, 246, 0.34);
+  box-shadow: 0 0 0 4px var(--jarvis-semantic-focus-ring), var(--jarvis-semantic-shadow-hover);
+}
+
+.clear {
+  justify-self: start;
+  min-height: 2.35rem;
+  padding: 0 0.9rem;
+  border: none;
+  border-radius: 0.75rem;
+  background: rgba(241, 245, 249, 0.94);
+  color: var(--jarvis-semantic-text-primary);
+  font: inherit;
+  cursor: pointer;
+}
+
+.action {
+  justify-self: start;
+  min-height: 2rem;
+  padding: 0 0.75rem;
+  border: none;
+  border-radius: 999px;
+  background: rgba(241, 245, 249, 0.94);
+  color: var(--jarvis-semantic-text-secondary);
+  font: inherit;
+  cursor: pointer;
+}
+
+.commit-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.45rem;
+}
+
+.action:disabled,
+.clear:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.action.secondary {
+  background: rgba(248, 250, 252, 0.96);
+  color: var(--jarvis-semantic-text-primary);
+}
+
+.action.primary {
+  background: rgba(59, 130, 246, 0.12);
+  color: var(--jarvis-semantic-action-primaryBg);
+}
+
+.summary {
+  color: var(--jarvis-semantic-text-tertiary);
+  font-size: 0.82rem;
+}
+
+.message {
+  font-size: 0.82rem;
+}
+
+.help {
+  color: var(--jarvis-semantic-text-tertiary);
+}
+
+.error {
+  color: rgb(185, 28, 28);
+}
+
+@media (min-width: 52rem) {
+  .inputs {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+    align-items: end;
+  }
+}
+
+:host-context([data-theme-family='material']) input {
+  border-radius: 1rem;
+}
+
+:host-context([data-theme-family='fluent']) input,
+:host-context([data-theme-family='fluent']) .clear,
+:host-context([data-theme-family='fluent']) .action {
+  border-radius: 0.55rem;
+}

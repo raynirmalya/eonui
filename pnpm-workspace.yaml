@@ -1,0 +1,26 @@
+packages:
+  - apps/docs
+  - apps/figma-mapper
+  - apps/playground
+  - apps/storybook
+  - packages/a11y
+  - packages/i18n
+  - packages/icons
+  - packages/jarvis-ai-prompts
+  - packages/jarvis-angular
+  - packages/jarvis-core
+  - packages/jarvis-manifest
+  - packages/jarvis-react
+  - packages/jarvis-vue
+  - packages/mystique-canvas
+  - packages/mystique-components
+  - packages/mystique-core
+  - packages/mystique-svg
+  - packages/styles
+  - packages/test-utils
+  - packages/tokens
+  - packages/utils
+  - tools/*
+
+ignoredBuiltDependencies:
+  - esbuild

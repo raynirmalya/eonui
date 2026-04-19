@@ -1,0 +1,24 @@
+{
+  "name": "@jarvis/docs",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "dev": "tsx src/server.ts",
+    "lint": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@jarvis/a11y": "workspace:*",
+    "@jarvis/angular": "workspace:*",
+    "@jarvis/i18n": "workspace:*",
+    "@jarvis/manifest": "workspace:*",
+    "@jarvis/react": "workspace:*",
+    "@jarvis/styles": "workspace:*",
+    "@jarvis/vue": "workspace:*",
+    "@mystique/components": "workspace:*",
+    "@mystique/core": "workspace:*"
+  }
+}

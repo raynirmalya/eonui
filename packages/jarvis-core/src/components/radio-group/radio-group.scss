@@ -1,0 +1,153 @@
+:host {
+  display: grid;
+}
+
+.group {
+  margin: 0;
+  padding: 0;
+  border: none;
+  display: grid;
+  gap: 0.6rem;
+}
+
+.group.readonly .item {
+  cursor: default;
+}
+
+.label {
+  color: var(--jarvis-semantic-text-secondary);
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+}
+
+.required-indicator {
+  margin-left: 0.3rem;
+  color: #b91c1c;
+  font-weight: 700;
+}
+
+.items {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.group.horizontal .items {
+  grid-template-columns: repeat(auto-fit, minmax(8rem, max-content));
+  align-items: center;
+}
+
+.item {
+  min-height: 2.8rem;
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  color: var(--jarvis-semantic-text-primary);
+  padding: 0.55rem 0.7rem;
+  border-radius: 0.9rem;
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(120, 138, 164, 0.16);
+  transition:
+    border-color var(--jarvis-motion-fast) var(--jarvis-motion-ease-premium),
+    box-shadow var(--jarvis-motion-fast) var(--jarvis-motion-ease-premium),
+    background-color var(--jarvis-motion-fast) var(--jarvis-motion-ease-premium),
+    transform var(--jarvis-motion-fast) var(--jarvis-motion-ease-premium);
+}
+
+.item input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.indicator {
+  margin-top: 0.15rem;
+  width: 1.1rem;
+  height: 1.1rem;
+  border: 1px solid var(--jarvis-semantic-border-strong);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.84);
+  box-shadow: inset 0 0 0 0.2rem transparent;
+}
+
+.item.checked .indicator {
+  border-color: var(--jarvis-semantic-action-primaryBg);
+  box-shadow: inset 0 0 0 0.26rem var(--jarvis-semantic-action-primaryBg);
+}
+
+.item.checked {
+  border-color: rgba(59, 130, 246, 0.32);
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 10px 26px rgba(15, 23, 42, 0.08);
+}
+
+.item:focus-within {
+  border-color: rgba(59, 130, 246, 0.42);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.14);
+}
+
+.group.readonly .item {
+  background: rgba(248, 250, 252, 0.9);
+}
+
+.copy {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.text {
+  font-weight: 600;
+}
+
+.description {
+  color: var(--jarvis-semantic-text-secondary);
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.item.described {
+  align-items: flex-start;
+}
+
+.item.toneDanger .text {
+  color: #b91c1c;
+}
+
+.group.invalid .indicator {
+  border-color: #b91c1c;
+}
+
+.group.invalid .item {
+  border-color: rgba(185, 28, 28, 0.24);
+}
+
+.group:disabled .item {
+  opacity: 0.55;
+}
+
+.message {
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.message.help {
+  color: var(--jarvis-semantic-text-secondary);
+}
+
+.message.error {
+  color: #b91c1c;
+}
+
+:host-context([data-theme-family='fluent']) .indicator {
+  width: 1rem;
+  height: 1rem;
+}
+
+:host-context([data-theme-family='material']) .item {
+  border-radius: 1rem;
+}
+
+:host-context([data-theme-family='fluent']) .item {
+  border-radius: 0.55rem;
+}

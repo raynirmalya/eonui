@@ -1,0 +1,29 @@
+.empty-state {
+  display: grid;
+  gap: 1rem;
+  justify-items: center;
+  padding: 2rem;
+  text-align: center;
+  border: 1px dashed var(--jarvis-semantic-border-default);
+  border-radius: 1rem;
+}
+
+.visual {
+  width: 4rem;
+  height: 4rem;
+  display: grid;
+  place-items: center;
+  border-radius: 1rem;
+  background: var(--jarvis-semantic-surface-sunken);
+}
+
+h2,
+p {
+  margin: 0;
+}
+
+.content {
+  display: grid;
+  gap: 0.75rem;
+}
+

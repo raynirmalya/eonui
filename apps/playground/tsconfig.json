@@ -1,0 +1,13 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "composite": true,
+    "rootDir": "./src",
+    "outDir": "./dist"
+  },
+  "references": [
+    { "path": "../../packages/jarvis-manifest" },
+    { "path": "../../packages/mystique-components" }
+  ],
+  "include": ["src/**/*"]
+}

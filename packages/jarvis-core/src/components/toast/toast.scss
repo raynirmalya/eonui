@@ -1,0 +1,189 @@
+:host {
+  display: block;
+}
+
+:host([position='top-center']),
+:host([position='top-left']),
+:host([position='bottom-center']),
+:host([position='bottom-left']),
+:host([position='top-right']),
+:host([position='bottom-right']) {
+  position: fixed;
+  z-index: 60;
+  width: min(24rem, calc(100vw - 2rem));
+}
+
+:host([position='top-left']) {
+  top: calc(1rem + var(--toast-stack-index, 0) * 5.75rem);
+  left: 1rem;
+}
+
+:host([position='top-center']) {
+  top: calc(1rem + var(--toast-stack-index, 0) * 5.75rem);
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+:host([position='bottom-left']) {
+  left: 1rem;
+  bottom: calc(1rem + var(--toast-stack-index, 0) * 5.75rem);
+}
+
+:host([position='bottom-center']) {
+  bottom: calc(1rem + var(--toast-stack-index, 0) * 5.75rem);
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+:host([position='top-right']) {
+  top: calc(1rem + var(--toast-stack-index, 0) * 5.75rem);
+  right: 1rem;
+}
+
+:host([position='bottom-right']) {
+  right: 1rem;
+  bottom: calc(1rem + var(--toast-stack-index, 0) * 5.75rem);
+}
+
+.toast {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  gap: 1rem;
+  align-items: start;
+  justify-content: space-between;
+  padding: 1rem 1.05rem 1.15rem;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 1.15rem;
+  background:
+    linear-gradient(180deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.92)),
+    #111827;
+  color: #f8fafc;
+  box-shadow: 0 24px 48px rgba(15, 23, 42, 0.28);
+  animation: jarvis-toast-enter var(--jarvis-motion-slow) var(--jarvis-motion-ease-premium);
+}
+
+.toast.compact {
+  gap: 0.75rem;
+  padding: 0.85rem 0.9rem 0.95rem;
+}
+
+.icon {
+  width: 2rem;
+  height: 2rem;
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.toast::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 4px;
+  background: linear-gradient(180deg, #60a5fa 0%, #22d3ee 100%);
+}
+
+.toast.success::before {
+  background: linear-gradient(180deg, #34d399 0%, #10b981 100%);
+}
+
+.toast.warning::before {
+  background: linear-gradient(180deg, #fbbf24 0%, #f59e0b 100%);
+}
+
+.toast.danger::before {
+  background: linear-gradient(180deg, #fb7185 0%, #ef4444 100%);
+}
+
+.content {
+  display: grid;
+  gap: 0.32rem;
+  flex: 1;
+}
+
+.title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+[part='title'] {
+  font-size: 0.95rem;
+  letter-spacing: -0.01em;
+}
+
+.timestamp {
+  color: rgba(248, 250, 252, 0.72);
+  font-size: 0.76rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.actions {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.toast.compact .actions {
+  gap: 0.35rem;
+}
+
+.progress-bar {
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 3px;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.9), rgba(148, 197, 255, 0.92));
+  transform-origin: left center;
+}
+
+.close {
+  width: 2rem;
+  height: 2rem;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+}
+
+.close:hover,
+.close:focus-visible {
+  background: rgba(255, 255, 255, 0.18);
+  outline: none;
+}
+
+.toast.compact .close {
+  width: 1.85rem;
+  height: 1.85rem;
+}
+
+@keyframes jarvis-toast-enter {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes jarvis-toast-progress {
+  from {
+    transform: scaleX(1);
+  }
+
+  to {
+    transform: scaleX(0);
+  }
+}
