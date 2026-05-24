@@ -1,5 +1,5 @@
-import { componentLibrary } from '@jarvis/manifest';
-import { flattenTokens, tokens } from '@jarvis/tokens';
+import { componentLibrary } from '@eonui/manifest';
+import { flattenTokens, tokens } from '@eonui/tokens';
 import type { FigmaNode, FigmaPropertyValue, MappedNode } from './types';
 
 const flattenedTokens = flattenTokens({
@@ -9,23 +9,23 @@ const flattenedTokens = flattenTokens({
 });
 
 const aliasMap: Record<string, string> = {
-  frame: 'jarvis-surface',
-  group: 'jarvis-stack',
-  section: 'jarvis-section',
-  stack: 'jarvis-stack',
-  grid: 'jarvis-grid',
-  surface: 'jarvis-surface',
-  button: 'jarvis-button',
-  input: 'jarvis-input',
-  textarea: 'jarvis-textarea',
-  select: 'jarvis-select',
-  combobox: 'jarvis-combobox',
-  card: 'jarvis-card',
-  badge: 'jarvis-badge',
-  alert: 'jarvis-alert',
-  toolbar: 'jarvis-toolbar',
-  emptystate: 'jarvis-empty-state',
-  'empty-state': 'jarvis-empty-state'
+  frame: 'eon-surface',
+  group: 'eon-stack',
+  section: 'eon-section',
+  stack: 'eon-stack',
+  grid: 'eon-grid',
+  surface: 'eon-surface',
+  button: 'eon-button',
+  input: 'eon-input',
+  textarea: 'eon-textarea',
+  select: 'eon-select',
+  combobox: 'eon-combobox',
+  card: 'eon-card',
+  badge: 'eon-badge',
+  alert: 'eon-alert',
+  toolbar: 'eon-toolbar',
+  emptystate: 'eon-empty-state',
+  'empty-state': 'eon-empty-state'
 };
 
 function normalizeName(value: string): string {
@@ -43,16 +43,16 @@ function resolveComponentTag(name: string): string {
     (component) => normalizeName(component.name) === normalized || normalizeName(component.tag) === normalized
   );
 
-  return fromManifest?.tag ?? 'jarvis-surface';
+  return fromManifest?.tag ?? 'eon-surface';
 }
 
 function resolveTokenBinding(value: FigmaPropertyValue): { token?: string; value: string } {
   if (typeof value === 'object' && value?.type === 'token') {
-    const key = value.value.replace(/^jarvis\./, '').replace(/\//g, '.');
+    const key = value.value.replace(/^Eon\./, '').replace(/\//g, '.');
     const token = flattenedTokens[key];
     return {
       token: key,
-      value: token ? `var(--jarvis-${key.replace(/\./g, '-')})` : value.value
+      value: token ? `var(--eon-${key.replace(/\./g, '-')})` : value.value
     };
   }
 
@@ -71,19 +71,19 @@ function applyNodeSpecificProps(node: FigmaNode, tag: string): { props: Record<s
     }
   });
 
-  if (tag === 'jarvis-button' && node.variant) {
+  if (tag === 'eon-button' && node.variant) {
     props.variant = node.variant;
   }
 
-  if (tag === 'jarvis-section' && node.props?.title) {
+  if (tag === 'eon-section' && node.props?.title) {
     props.heading = String(node.props.title);
   }
 
-  if (tag === 'jarvis-stack' && !props.gap) {
-    props.gap = 'var(--jarvis-component-layout-gap)';
+  if (tag === 'eon-stack' && !props.gap) {
+    props.gap = 'var(--eon-component-layout-gap)';
   }
 
-  if (tag === 'jarvis-grid' && !props.min) {
+  if (tag === 'eon-grid' && !props.min) {
     props.min = '16rem';
   }
 
@@ -105,8 +105,8 @@ export function mapFigmaNode(node: FigmaNode): MappedNode {
   const tag = resolveComponentTag(node.name || node.type || 'surface');
   const { props, tokenBindings } = applyNodeSpecificProps(node, tag);
   const frameworkName =
-    `Jarvis${tag
-      .replace('jarvis-', '')
+    `Eon${tag
+      .replace('eon-', '')
       .split('-')
       .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
       .join('')}`;

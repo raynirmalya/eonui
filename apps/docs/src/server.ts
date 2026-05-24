@@ -1,21 +1,23 @@
 import { createServer, type IncomingMessage } from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { extname, resolve } from 'node:path';
-import { chartLibrary, componentLibrary } from '@jarvis/manifest';
-import type { ComponentManifestEntry, LibraryManifest, ManifestProp } from '@jarvis/manifest';
-import { createMystiqueChart, createMystiqueChartPreview } from '@mystique/components';
+import { chartLibrary, componentLibrary } from '@eonui/manifest';
+import type { ComponentManifestEntry, LibraryManifest, ManifestProp } from '@eonui/manifest';
+import { createMystiqueChart, createMystiqueChartPreview } from '@eonui/charts';
 import {
   MYSTIQUE_FULLY_IMPLEMENTED_CHART_TARGET,
   createSampleChartData,
   isFullyImplementedChart as isFullyImplementedMystiqueChart,
   resolveChartType
-} from '@mystique/core';
+} from '@eonui/charts-core';
 import { sharedGuides } from './accessibility-guides.js';
+import { careerCoreWorkflow, careerLaunchPhases, careerRoleLandingPages, careerToolTracks } from './career-tools.js';
 import { chartGuide } from './chart-guides.js';
 import { guidePages } from './content.js';
 import { frameworkGuides } from './framework-guides.js';
+import { toolCategories, toolEngineBlueprints, toolImplementationWaves, type ToolLaunchPriority } from './tool-taxonomy.js';
 import { tokenGuide } from './token-guides.js';
-import { themeBundleCss } from '@jarvis/styles';
+import { themeBundleCss } from '@eonui/styles';
 
 const componentCategoryLabels: Record<string, string> = {
   forms: 'Forms and input',
@@ -86,6 +88,20 @@ function renderPills(values: readonly string[], emptyLabel: string): string {
   return values.length ? `<div class="pill-row">${values.map((value) => `<span class="pill">${escapeHtml(value)}</span>`).join('')}</div>` : `<p>${emptyLabel}</p>`;
 }
 
+function renderReferenceProducts(
+  references: ReadonlyArray<{ name: string; url: string; focus: string }>,
+  emptyLabel: string
+): string {
+  return references.length
+    ? `<ul>${references
+        .map(
+          (reference) =>
+            `<li><a href="${escapeHtml(reference.url)}" target="_blank" rel="noreferrer">${escapeHtml(reference.name)}</a>: ${escapeHtml(reference.focus)}</li>`
+        )
+        .join('')}</ul>`
+    : `<p>${emptyLabel}</p>`;
+}
+
 function renderProps(props: Array<{ name: string; type: string; default?: string; description: string }>): string {
   if (!props.length) {
     return '<p>No public props documented yet.</p>';
@@ -123,7 +139,7 @@ function renderMethods(methods: Array<{ name: string; description: string }>): s
 }
 
 function renderCodeBlock(code: string): string {
-  return `<pre><code>${escapeHtml(code)}</code></pre>`;
+  return `<pre>${escapeHtml(code)}</pre>`;
 }
 
 function groupChartsByFamily(charts: ChartManifestEntry[]) {
@@ -212,7 +228,7 @@ function renderChartSvgPreview(chart: ChartManifestEntry, width = 640, height = 
   const chartName = chart.name ?? 'line';
   return createMystiqueChart({
     type: chartName,
-    data: createSampleChartData(chartName) as Array<Record<string, unknown>>,
+    data: createSampleChartData(chartName),
     options: {
       title: titleCase(chartName),
       width,
@@ -228,7 +244,7 @@ function createChartRendererCode(chart: ChartManifestEntry, renderer: 'svg' | 'c
   const dataBlock = JSON.stringify(sampleData, null, 2);
 
   if (renderer === 'svg') {
-    return `import { createMystiqueChart } from '@mystique/components';
+    return `import { createMystiqueChart } from '@eonui/charts';
 
 const data = ${dataBlock};
 
@@ -244,7 +260,7 @@ const markup = createMystiqueChart({
 });`;
   }
 
-  return `import { drawMystiqueChart } from '@mystique/canvas';
+  return `import { drawMystiqueChart } from '@eonui/charts-canvas';
 
 const data = ${dataBlock};
 const canvas = document.querySelector('canvas');
@@ -437,244 +453,244 @@ function createDefaultExample(component: ComponentManifestEntry): string {
     return component.examples[0].code;
   }
 
-  if (component.tag === 'jarvis-accordion') {
-    return `<jarvis-accordion items="Workspace defaults|Control the base workspace experience and save preferred launch views.|; Notifications|Route alerts by priority, owner, and working hours.|; Escalations|Choose who gets paged after hours and which channels stay enabled.|" value="Workspace defaults"></jarvis-accordion>`;
+  if (component.tag === 'eon-accordion') {
+    return `<eon-accordion items="Workspace defaults|Control the base workspace experience and save preferred launch views.|; Notifications|Route alerts by priority, owner, and working hours.|; Escalations|Choose who gets paged after hours and which channels stay enabled.|" value="Workspace defaults"></eon-accordion>`;
   }
 
-  if (component.tag === 'jarvis-dropdown-menu') {
-    return `<jarvis-dropdown-menu label="More actions" items="Workspace/Edit|edit||Update the current workspace details.; Workspace/Duplicate|duplicate||Create a copy for experimentation.; Reviews/Archive|archive||Move this workspace to the archive.; Reviews/Delete|delete|danger|This action cannot be undone." show-selection value="duplicate"></jarvis-dropdown-menu>`;
+  if (component.tag === 'eon-dropdown-menu') {
+    return `<eon-dropdown-menu label="More actions" items="Workspace/Edit|edit||Update the current workspace details.; Workspace/Duplicate|duplicate||Create a copy for experimentation.; Reviews/Archive|archive||Move this workspace to the archive.; Reviews/Delete|delete|danger|This action cannot be undone." show-selection value="duplicate"></eon-dropdown-menu>`;
   }
 
-  if (component.tag === 'jarvis-breadcrumb') {
-    return `<jarvis-breadcrumb items="Workspace,Projects,Jarvis UI,Components"></jarvis-breadcrumb>`;
+  if (component.tag === 'eon-breadcrumb') {
+    return `<eon-breadcrumb items="Workspace,Projects,Eon UI,Components"></eon-breadcrumb>`;
   }
 
-  if (component.tag === 'jarvis-list') {
-    return `<div style="display:grid;grid-template-columns:minmax(18rem,1fr) minmax(15rem,18rem);gap:1rem;align-items:start;"><jarvis-list items="Hamburg/Hamburg Suites~20099, An Der Alster 82; Hamburg/The Park Hotel~20537, Borstelmannsweg 82; Honolulu/Honolulu Inn~96801, 822 Mauna Loa Rd; Honolulu/Waikiki Beach Hotel~96801, 800 Waikiki Ave" selection-mode="multiple" search-enabled search-mode="startsWith" show-selection-controls show-toolbar show-select-all show-status search-placeholder="Search hotels" selected="Hamburg/Hamburg Suites~20099, An Der Alster 82,Hamburg/The Park Hotel~20537, Borstelmannsweg 82"></jarvis-list><jarvis-surface elevated><jarvis-stack><strong>Selection workspace</strong><p>Toolbar actions now let people refine with search, bulk select visible results, and clear the current set without leaving the list.</p><jarvis-chip removable>2 selected</jarvis-chip></jarvis-stack></jarvis-surface></div>`;
+  if (component.tag === 'eon-list') {
+    return `<div style="display:grid;grid-template-columns:minmax(18rem,1fr) minmax(15rem,18rem);gap:1rem;align-items:start;"><eon-list items="Hamburg/Hamburg Suites~20099, An Der Alster 82; Hamburg/The Park Hotel~20537, Borstelmannsweg 82; Honolulu/Honolulu Inn~96801, 822 Mauna Loa Rd; Honolulu/Waikiki Beach Hotel~96801, 800 Waikiki Ave" selection-mode="multiple" search-enabled search-mode="startsWith" show-selection-controls show-toolbar show-select-all show-status search-placeholder="Search hotels" selected="Hamburg/Hamburg Suites~20099, An Der Alster 82,Hamburg/The Park Hotel~20537, Borstelmannsweg 82"></eon-list><eon-surface elevated><eon-stack><strong>Selection workspace</strong><p>Toolbar actions now let people refine with search, bulk select visible results, and clear the current set without leaving the list.</p><eon-chip removable>2 selected</eon-chip></eon-stack></eon-surface></div>`;
   }
 
-  if (component.tag === 'jarvis-pagination') {
-    return `<jarvis-pagination page="3" total="8"></jarvis-pagination>`;
+  if (component.tag === 'eon-pagination') {
+    return `<eon-pagination page="3" total="8"></eon-pagination>`;
   }
 
-  if (component.tag === 'jarvis-popover') {
-    return `<jarvis-popover trigger-label="Review details" heading="Workspace summary" description="Quick context for reviewers" width="18rem"><jarvis-stack><p>Use a popover when people need lightweight context without leaving the current surface.</p><jarvis-button variant="outline">Open workspace</jarvis-button></jarvis-stack></jarvis-popover>`;
+  if (component.tag === 'eon-popover') {
+    return `<eon-popover trigger-label="Review details" heading="Workspace summary" description="Quick context for reviewers" width="18rem"><eon-stack><p>Use a popover when people need lightweight context without leaving the current surface.</p><eon-button variant="outline">Open workspace</eon-button></eon-stack></eon-popover>`;
   }
 
-  if (component.tag === 'jarvis-tabs') {
-    return `<jarvis-tabs labels="Overview,Usage,Accessibility"><div>Use tabs to switch related content in place.</div></jarvis-tabs>`;
+  if (component.tag === 'eon-tabs') {
+    return `<eon-tabs labels="Overview,Usage,Accessibility"><div>Use tabs to switch related content in place.</div></eon-tabs>`;
   }
 
-  if (component.tag === 'jarvis-button-group') {
-    return `<jarvis-button-group label="Align content" items="Left~Primary reading edge; Center~Balanced layouts; Right~Edge anchored notes; Justify~Long-form paragraphs" value="Center" help-text="Choose the default content alignment for this workspace."></jarvis-button-group>`;
+  if (component.tag === 'eon-button-group') {
+    return `<eon-button-group label="Align content" items="Left~Primary reading edge; Center~Balanced layouts; Right~Edge anchored notes; Justify~Long-form paragraphs" value="Center" help-text="Choose the default content alignment for this workspace."></eon-button-group>`;
   }
 
-  if (component.tag === 'jarvis-menu') {
-    return `<div style="display:grid;gap:1rem;"><jarvis-menu aria-label="Product catalog navigation" aria-description="Top-level product catalog with hover-first submenus and remembered selection." items="Catalog/Video Players/HD Video Player~Best for compact rooms; Catalog/Video Players/SuperHD Video Player~Cinematic upgrade; Catalog/Televisions/SuperLCD 42~Backordered this month|disabled; Catalog/Televisions/SuperLED 50~Flagship showroom panel; Workspace/Admin/Delete workspace~Requires owner approval|danger" orientation="horizontal" trigger-mode="click" show-first-submenu-mode="hover" value="Catalog/Televisions/SuperLED 50"></jarvis-menu><div style="display:grid;grid-template-columns:minmax(13rem,16rem) minmax(0,1fr);gap:1rem;align-items:start;"><jarvis-menu aria-label="Workspace command rail" aria-description="Vertical workspace rail with persistent flyouts and explicit selection indicators." items="Workspace/Overview~Live dashboard; Workspace/Members~32 collaborators; Workspace/Billing~Invoices and plans; Reports/Sales/Daily~Updated hourly; Reports/Sales/Weekly~Board review ready; Reports/Inventory/Reorder list~2 suppliers pending|disabled; Settings/Security~MFA enforced" orientation="vertical" trigger-mode="click" close-on-select="false" value="Reports/Sales/Weekly"></jarvis-menu><jarvis-surface elevated><jarvis-stack><strong>Catalog workspace</strong><p>Use hover or click to reveal submenu actions while keeping disabled and destructive rows clearly distinct. Type a few letters to jump focus to the next matching command.</p></jarvis-stack></jarvis-surface></div></div>`;
+  if (component.tag === 'eon-menu') {
+    return `<div style="display:grid;gap:1rem;"><eon-menu aria-label="Product catalog navigation" aria-description="Top-level product catalog with hover-first submenus and remembered selection." items="Catalog/Video Players/HD Video Player~Best for compact rooms; Catalog/Video Players/SuperHD Video Player~Cinematic upgrade; Catalog/Televisions/SuperLCD 42~Backordered this month|disabled; Catalog/Televisions/SuperLED 50~Flagship showroom panel; Workspace/Admin/Delete workspace~Requires owner approval|danger" orientation="horizontal" trigger-mode="click" show-first-submenu-mode="hover" value="Catalog/Televisions/SuperLED 50"></eon-menu><div style="display:grid;grid-template-columns:minmax(13rem,16rem) minmax(0,1fr);gap:1rem;align-items:start;"><eon-menu aria-label="Workspace command rail" aria-description="Vertical workspace rail with persistent flyouts and explicit selection indicators." items="Workspace/Overview~Live dashboard; Workspace/Members~32 collaborators; Workspace/Billing~Invoices and plans; Reports/Sales/Daily~Updated hourly; Reports/Sales/Weekly~Board review ready; Reports/Inventory/Reorder list~2 suppliers pending|disabled; Settings/Security~MFA enforced" orientation="vertical" trigger-mode="click" close-on-select="false" value="Reports/Sales/Weekly"></eon-menu><eon-surface elevated><eon-stack><strong>Catalog workspace</strong><p>Use hover or click to reveal submenu actions while keeping disabled and destructive rows clearly distinct. Type a few letters to jump focus to the next matching command.</p></eon-stack></eon-surface></div></div>`;
   }
 
-  if (component.tag === 'jarvis-context-menu') {
-    return `<jarvis-context-menu aria-label="Product media actions" show-on="click" close-on-select="false" value="Add to favorite" items="Share/Facebook~Publish to the company page; Share/Twitter~Post the teaser copy; Download~Save the latest preview; Add comment~Open the review thread; Add to favorite~Pin to quick access; Delete asset~Cannot be undone|danger"><div style="display:grid;gap:0.8rem;justify-items:start;padding:1rem;border:1px solid rgba(120,138,164,0.22);border-radius:1rem;background:linear-gradient(180deg,#ffffff,#f8fbff);min-height:12rem;"><div style="font-size:0.8rem;text-transform:uppercase;letter-spacing:0.08em;color:#64748b;">Product media</div><div style="width:100%;min-height:8rem;border-radius:0.9rem;background:linear-gradient(135deg,#0f172a,#1e293b 45%,#334155);display:grid;place-items:center;color:#f8fafc;font-weight:600;">Click the display preview</div><div style="display:flex;justify-content:space-between;width:100%;font-size:0.95rem;color:#334155;"><span>SuperLCD 55</span><strong>$799</strong></div></div></jarvis-context-menu>`;
+  if (component.tag === 'eon-context-menu') {
+    return `<eon-context-menu aria-label="Product media actions" show-on="click" close-on-select="false" value="Add to favorite" items="Share/Facebook~Publish to the company page; Share/Twitter~Post the teaser copy; Download~Save the latest preview; Add comment~Open the review thread; Add to favorite~Pin to quick access; Delete asset~Cannot be undone|danger"><div style="display:grid;gap:0.8rem;justify-items:start;padding:1rem;border:1px solid rgba(120,138,164,0.22);border-radius:1rem;background:linear-gradient(180deg,#ffffff,#f8fbff);min-height:12rem;"><div style="font-size:0.8rem;text-transform:uppercase;letter-spacing:0.08em;color:#64748b;">Product media</div><div style="width:100%;min-height:8rem;border-radius:0.9rem;background:linear-gradient(135deg,#0f172a,#1e293b 45%,#334155);display:grid;place-items:center;color:#f8fafc;font-weight:600;">Click the display preview</div><div style="display:flex;justify-content:space-between;width:100%;font-size:0.95rem;color:#334155;"><span>SuperLCD 55</span><strong>$799</strong></div></div></eon-context-menu>`;
   }
 
-  if (component.tag === 'jarvis-stepper') {
-    return `<div style="display:grid;gap:1rem;"><jarvis-stepper items="Cart|cart||; Shipping info|truck||; Promo code|gift|Optional|optional; Checkout|card||; Ordered|check|Confirmed|" current="2" completed="0,1" invalid-steps="3" disabled-steps="4" size="lg"></jarvis-stepper><jarvis-surface elevated><jarvis-stack><strong>Reviewable step flow</strong><p>Completed, invalid, and disabled steps can now be driven externally, which makes the stepper useful for form review and workflow summary screens.</p></jarvis-stack></jarvis-surface></div>`;
+  if (component.tag === 'eon-stepper') {
+    return `<div style="display:grid;gap:1rem;"><eon-stepper items="Cart|cart||; Shipping info|truck||; Promo code|gift|Optional|optional; Checkout|card||; Ordered|check|Confirmed|" current="2" completed="0,1" invalid-steps="3" disabled-steps="4" size="lg"></eon-stepper><eon-surface elevated><eon-stack><strong>Reviewable step flow</strong><p>Completed, invalid, and disabled steps can now be driven externally, which makes the stepper useful for form review and workflow summary screens.</p></eon-stack></eon-surface></div>`;
   }
 
-  if (component.tag === 'jarvis-autocomplete') {
-    return `<jarvis-autocomplete label="Assignee" placeholder="Search teammates" suggestions="George,Margaret,Olivia,Victor,Sam,John" show-clear-button accept-custom-value value="Olivia"></jarvis-autocomplete>`;
+  if (component.tag === 'eon-autocomplete') {
+    return `<eon-autocomplete label="Assignee" placeholder="Search teammates" suggestions="George,Margaret,Olivia,Victor,Sam,John" show-clear-button accept-custom-value value="Olivia"></eon-autocomplete>`;
   }
 
-  if (component.tag === 'jarvis-combobox') {
-    return `<jarvis-combobox label="Owner" placeholder="Select or type an owner" options="Leadership/John Heart; Leadership/Samantha Bright; Engineering/Kevin Carter; Engineering/Victor Norris" show-clear-button search-mode="startsWith" value="Engineering/Kevin Carter"></jarvis-combobox>`;
+  if (component.tag === 'eon-combobox') {
+    return `<eon-combobox label="Owner" placeholder="Select or type an owner" options="Leadership/John Heart; Leadership/Samantha Bright; Engineering/Kevin Carter; Engineering/Victor Norris" show-clear-button search-mode="startsWith" value="Engineering/Kevin Carter"></eon-combobox>`;
   }
 
-  if (component.tag === 'jarvis-radio') {
-    return `<jarvis-radio label="Primary contact" name="contact-choice" value="primary" checked help-text="Single radios can still carry helper copy when the surrounding form provides the group context."></jarvis-radio>`;
+  if (component.tag === 'eon-radio') {
+    return `<eon-radio label="Primary contact" name="contact-choice" value="primary" checked help-text="Single radios can still carry helper copy when the surrounding form provides the group context."></eon-radio>`;
   }
 
-  if (component.tag === 'jarvis-radio-group') {
-    return `<jarvis-radio-group label="Priority" items="Low~Standard response window; Normal~Default handling pace; Urgent~Routes to the incident queue; High~Escalates to the on-call lead|high|danger" value="Urgent" required help-text="Choose the escalation level before routing the ticket."></jarvis-radio-group>`;
+  if (component.tag === 'eon-radio-group') {
+    return `<eon-radio-group label="Priority" items="Low~Standard response window; Normal~Default handling pace; Urgent~Routes to the incident queue; High~Escalates to the on-call lead|high|danger" value="Urgent" required help-text="Choose the escalation level before routing the ticket."></eon-radio-group>`;
   }
 
-  if (component.tag === 'jarvis-select-box') {
-    return `<jarvis-select-box label="Product" items="Video Players/HD Video Player; Video Players/SuperHD Video Player; Televisions/SuperLCD 42; Televisions/SuperLED 50" grouped search-enabled show-clear-button value="Video Players/HD Video Player" help-text="Search, clear, and validation states now align with the rest of the Jarvis editor family."></jarvis-select-box>`;
+  if (component.tag === 'eon-select-box') {
+    return `<eon-select-box label="Product" items="Video Players/HD Video Player; Video Players/SuperHD Video Player; Televisions/SuperLCD 42; Televisions/SuperLED 50" grouped search-enabled show-clear-button value="Video Players/HD Video Player" help-text="Search, clear, and validation states now align with the rest of the Eon editor family."></eon-select-box>`;
   }
 
-  if (component.tag === 'jarvis-lookup') {
-    return `<jarvis-lookup label="Owner" heading="Select employee" items="Leadership/John Heart; Leadership/Samantha Bright; Engineering/Kevin Carter; Engineering/Victor Norris" value="Engineering/Kevin Carter" grouped show-clear-button help-text="Search the full employee list and confirm the right owner."></jarvis-lookup>`;
+  if (component.tag === 'eon-lookup') {
+    return `<eon-lookup label="Owner" heading="Select employee" items="Leadership/John Heart; Leadership/Samantha Bright; Engineering/Kevin Carter; Engineering/Victor Norris" value="Engineering/Kevin Carter" grouped show-clear-button help-text="Search the full employee list and confirm the right owner."></eon-lookup>`;
   }
 
-  if (component.tag === 'jarvis-drop-down-box') {
-    return `<jarvis-drop-down-box label="Products" items="HD Video Player|hd; SuperHD Video Player|super-hd; SuperLCD 42|lcd-42; SuperLED 50|led-50; Projector Plus|projector" content-type="list" selection-mode="multiple" search-enabled show-selection-controls apply-value-mode="useButtons" show-clear-button value="hd,lcd-42" help-text="Use the embedded list when a plain select box is too shallow."></jarvis-drop-down-box>`;
+  if (component.tag === 'eon-drop-down-box') {
+    return `<eon-drop-down-box label="Products" items="HD Video Player|hd; SuperHD Video Player|super-hd; SuperLCD 42|lcd-42; SuperLED 50|led-50; Projector Plus|projector" content-type="list" selection-mode="multiple" search-enabled show-selection-controls apply-value-mode="useButtons" show-clear-button value="hd,lcd-42" help-text="Use the embedded list when a plain select box is too shallow."></eon-drop-down-box>`;
   }
 
-  if (component.tag === 'jarvis-drop-down-button') {
-    return `<jarvis-drop-down-button label="Download trial" icon="save" split-button value="Download trial" items="Download trial||success|Export the latest evaluation build.; Share preview||default|Send the link to reviewers.; Archive draft||warning|Move the current draft out of the active queue.; Delete workspace||danger|Permanently remove the current draft."></jarvis-drop-down-button>`;
+  if (component.tag === 'eon-drop-down-button') {
+    return `<eon-drop-down-button label="Download trial" icon="save" split-button value="Download trial" items="Download trial||success|Export the latest evaluation build.; Share preview||default|Send the link to reviewers.; Archive draft||warning|Move the current draft out of the active queue.; Delete workspace||danger|Permanently remove the current draft."></eon-drop-down-button>`;
   }
 
-  if (component.tag === 'jarvis-tag-box') {
-    return `<jarvis-tag-box label="Products" items="Automation/ExcelRemote IR; Automation/ExcelRemote IP; Monitors/DesktopLCD 21; Monitors/DesktopLED 19; Projectors/Projector Plus" grouped search-enabled show-clear-button max-displayed-tags="2" value="Automation/ExcelRemote IR,Automation/ExcelRemote IP,Monitors/DesktopLCD 21" help-text="Selected items collapse into tags without hiding the search flow."></jarvis-tag-box>`;
+  if (component.tag === 'eon-tag-box') {
+    return `<eon-tag-box label="Products" items="Automation/ExcelRemote IR; Automation/ExcelRemote IP; Monitors/DesktopLCD 21; Monitors/DesktopLED 19; Projectors/Projector Plus" grouped search-enabled show-clear-button max-displayed-tags="2" value="Automation/ExcelRemote IR,Automation/ExcelRemote IP,Monitors/DesktopLCD 21" help-text="Selected items collapse into tags without hiding the search flow."></eon-tag-box>`;
   }
 
-  if (component.tag === 'jarvis-number-box') {
-    return `<jarvis-number-box label="Budget" value="14500.55" format="currency" currency="USD" fraction-digits="2" show-spin-buttons show-clear-button help-text="Currency formatting collapses to an editable value on focus."></jarvis-number-box>`;
+  if (component.tag === 'eon-number-box') {
+    return `<eon-number-box label="Budget" value="14500.55" format="currency" currency="USD" fraction-digits="2" show-spin-buttons show-clear-button help-text="Currency formatting collapses to an editable value on focus."></eon-number-box>`;
   }
 
-  if (component.tag === 'jarvis-slider') {
-    return `<jarvis-slider label="Completion" value="65" min="0" max="100" value-suffix="%" show-labels show-tooltip show-ticks tick-interval="25"></jarvis-slider>`;
+  if (component.tag === 'eon-slider') {
+    return `<eon-slider label="Completion" value="65" min="0" max="100" value-suffix="%" show-labels show-tooltip show-ticks tick-interval="25"></eon-slider>`;
   }
 
-  if (component.tag === 'jarvis-range-slider') {
-    return `<jarvis-range-slider label="Budget range" start="15" end="65" min="0" max="100" value-prefix="$" value-suffix="k" show-labels show-tooltips show-ticks tick-interval="25"></jarvis-range-slider>`;
+  if (component.tag === 'eon-range-slider') {
+    return `<eon-range-slider label="Budget range" start="15" end="65" min="0" max="100" value-prefix="$" value-suffix="k" show-labels show-tooltips show-ticks tick-interval="25"></eon-range-slider>`;
   }
 
-  if (component.tag === 'jarvis-calendar') {
-    return `<jarvis-calendar selection-mode="multiple" show-week-numbers show-today-button first-day-of-week="1" min="2026-04-05" max="2026-04-28" disabled-dates="2026-04-12,2026-04-19" value="2026-04-15,2026-04-16"></jarvis-calendar>`;
+  if (component.tag === 'eon-calendar') {
+    return `<eon-calendar selection-mode="multiple" show-week-numbers show-today-button first-day-of-week="1" min="2026-04-05" max="2026-04-28" disabled-dates="2026-04-12,2026-04-19" value="2026-04-15,2026-04-16"></eon-calendar>`;
   }
 
-  if (component.tag === 'jarvis-date-box') {
-    return `<jarvis-date-box label="Billing cutoff" type="date" value="2026-04-15" min="2026-04-01" max="2026-04-30" help-text="Stage a new billing date, then apply it when you're ready." apply-value-mode="useButtons" show-clear-button show-today-button open-on-field-click></jarvis-date-box>`;
+  if (component.tag === 'eon-date-box') {
+    return `<eon-date-box label="Billing cutoff" type="date" value="2026-04-15" min="2026-04-01" max="2026-04-30" help-text="Stage a new billing date, then apply it when you're ready." apply-value-mode="useButtons" show-clear-button show-today-button open-on-field-click></eon-date-box>`;
   }
 
-  if (component.tag === 'jarvis-date-range-box') {
-    return `<jarvis-date-range-box label="Publishing window" start="2026-04-12" end="2026-04-18" min="2026-04-01" max="2026-05-15" start-placeholder="Start" end-placeholder="End" help-text="Stage the range before committing it to the release schedule." apply-value-mode="useButtons" show-clear-button show-picker-buttons></jarvis-date-range-box>`;
+  if (component.tag === 'eon-date-range-box') {
+    return `<eon-date-range-box label="Publishing window" start="2026-04-12" end="2026-04-18" min="2026-04-01" max="2026-05-15" start-placeholder="Start" end-placeholder="End" help-text="Stage the range before committing it to the release schedule." apply-value-mode="useButtons" show-clear-button show-picker-buttons></eon-date-range-box>`;
   }
 
-  if (component.tag === 'jarvis-file-uploader') {
-    return `<jarvis-file-uploader label="Attachments" accept=".png,.jpg,.pdf" multiple max-files="3" max-file-size="2000000" help-text="Upload up to 3 files, each under 2 MB." upload-mode="manual"></jarvis-file-uploader>`;
+  if (component.tag === 'eon-file-uploader') {
+    return `<eon-file-uploader label="Attachments" accept=".png,.jpg,.pdf" multiple max-files="3" max-file-size="2000000" help-text="Upload up to 3 files, each under 2 MB." upload-mode="manual"></eon-file-uploader>`;
   }
 
-  if (component.tag === 'jarvis-color-box') {
-    return `<jarvis-color-box label="Brand accent" value="#f05b41" help-text="Choose a theme color for highlighted actions and links." presets="#f05b41;#2563eb;#16a34a;#111827"></jarvis-color-box>`;
+  if (component.tag === 'eon-color-box') {
+    return `<eon-color-box label="Brand accent" value="#f05b41" help-text="Choose a theme color for highlighted actions and links." presets="#f05b41;#2563eb;#16a34a;#111827"></eon-color-box>`;
   }
 
-  if (component.tag === 'jarvis-gallery') {
-    return `<jarvis-gallery items="Coastal residence~Oceanfront suite with panoramic windows~Featured stay|#dbeafe,#93c5fd; Downtown studio~Creative review room and lounge~Urban workspace|#e0f2fe,#38bdf8; Forest retreat~Calm woodland lodge with spa access~Wellness escape|#dcfce7,#22c55e" show-thumbnails thumbnail-position="side" show-counter pause-on-hover></jarvis-gallery>`;
+  if (component.tag === 'eon-gallery') {
+    return `<eon-gallery items="Coastal residence~Oceanfront suite with panoramic windows~Featured stay|#dbeafe,#93c5fd; Downtown studio~Creative review room and lounge~Urban workspace|#e0f2fe,#38bdf8; Forest retreat~Calm woodland lodge with spa access~Wellness escape|#dcfce7,#22c55e" show-thumbnails thumbnail-position="side" show-counter pause-on-hover></eon-gallery>`;
   }
 
-  if (component.tag === 'jarvis-chat') {
-    return `<jarvis-chat label="Account recovery" user="John Doe" status="Agent online" status-tone="success" attachments-enabled composer-help-text="Press Ctrl+Enter to send quickly." max-attachments="2"></jarvis-chat>`;
+  if (component.tag === 'eon-chat') {
+    return `<eon-chat label="Account recovery" user="John Doe" status="Agent online" status-tone="success" attachments-enabled composer-help-text="Press Ctrl+Enter to send quickly." max-attachments="2"></eon-chat>`;
   }
 
-  if (component.tag === 'jarvis-load-indicator') {
-    return `<jarvis-load-indicator type="ring" size="lg" layout="stacked" show-label message="Syncing workspace data"></jarvis-load-indicator>`;
+  if (component.tag === 'eon-load-indicator') {
+    return `<eon-load-indicator type="ring" size="lg" layout="stacked" show-label message="Syncing workspace data"></eon-load-indicator>`;
   }
 
-  if (component.tag === 'jarvis-load-panel') {
-    return `<jarvis-load-panel visible heading="Loading employee profile" message="Fetching profile details and recent activity" description="This usually takes a few seconds while we hydrate the card and timeline." progress-value="72" show-cancel-button><jarvis-surface><jarvis-stack><strong>John Heart</strong><p>Fetching profile details and activity...</p></jarvis-stack></jarvis-surface></jarvis-load-panel>`;
+  if (component.tag === 'eon-load-panel') {
+    return `<eon-load-panel visible heading="Loading employee profile" message="Fetching profile details and recent activity" description="This usually takes a few seconds while we hydrate the card and timeline." progress-value="72" show-cancel-button><eon-surface><eon-stack><strong>John Heart</strong><p>Fetching profile details and activity...</p></eon-stack></eon-surface></eon-load-panel>`;
   }
 
-  if (component.tag === 'jarvis-progress') {
-    return `<jarvis-progress label="Uploading media" value="64" show-value-label helper-text="3 of 5 files complete."></jarvis-progress>`;
+  if (component.tag === 'eon-progress') {
+    return `<eon-progress label="Uploading media" value="64" show-value-label helper-text="3 of 5 files complete."></eon-progress>`;
   }
 
-  if (component.tag === 'jarvis-scroll-view') {
-    return `<jarvis-scroll-view height="18rem" top-status-text="Top of the workspace timeline" bottom-status-text="More updates below" show-shadows show-refresh-button refresh-label="Reload feed"><jarvis-stack><p>Content has been updated on the reach-bottom event.</p><p>Content has been updated on the reach-bottom event.</p><p>Content has been updated on the reach-bottom event.</p><p>Content has been updated on the reach-bottom event.</p><p>Content has been updated on the reach-bottom event.</p><p>Content has been updated on the reach-bottom event.</p><p>Content has been updated on the reach-bottom event.</p><p>Content has been updated on the reach-bottom event.</p></jarvis-stack></jarvis-scroll-view>`;
+  if (component.tag === 'eon-scroll-view') {
+    return `<eon-scroll-view height="18rem" top-status-text="Top of the workspace timeline" bottom-status-text="More updates below" show-shadows show-refresh-button refresh-label="Reload feed"><eon-stack><p>Content has been updated on the reach-bottom event.</p><p>Content has been updated on the reach-bottom event.</p><p>Content has been updated on the reach-bottom event.</p><p>Content has been updated on the reach-bottom event.</p><p>Content has been updated on the reach-bottom event.</p><p>Content has been updated on the reach-bottom event.</p><p>Content has been updated on the reach-bottom event.</p><p>Content has been updated on the reach-bottom event.</p></eon-stack></eon-scroll-view>`;
   }
 
-  if (component.tag === 'jarvis-floating-action-button') {
-    return `<div style="display:grid;gap:1rem;"><jarvis-floating-action-button position="inline" extended label="Add row" aria-description="Inline launcher with described follow-up actions." items="New row~Insert a row beneath the active one.|row|success; Invite teammate~Send an access invite to a collaborator.|invite; Duplicate report~Clone the active workspace card.|duplicate"></jarvis-floating-action-button><jarvis-floating-action-button position="inline" label="Compose" direction="right" close-on-select="false" items="Email~Open the email composer.|email; Message~Send a quick chat ping.|message; Delete draft~Remove the current draft.|delete|danger"></jarvis-floating-action-button></div>`;
+  if (component.tag === 'eon-floating-action-button') {
+    return `<div style="display:grid;gap:1rem;"><eon-floating-action-button position="inline" extended label="Add row" aria-description="Inline launcher with described follow-up actions." items="New row~Insert a row beneath the active one.|row|success; Invite teammate~Send an access invite to a collaborator.|invite; Duplicate report~Clone the active workspace card.|duplicate"></eon-floating-action-button><eon-floating-action-button position="inline" label="Compose" direction="right" close-on-select="false" items="Email~Open the email composer.|email; Message~Send a quick chat ping.|message; Delete draft~Remove the current draft.|delete|danger"></eon-floating-action-button></div>`;
   }
 
-  if (component.tag === 'jarvis-sortable') {
-    return `<jarvis-sortable compact columns="Backlog,Ready,Review,Done" empty-column-text="Queue is clear" items="Backlog/Write launch brief|Olivia Peyton|success; Ready/Prep stakeholder deck|Victor Norris|warning; Review/Confirm launch date|Maya Chen|danger"></jarvis-sortable>`;
+  if (component.tag === 'eon-sortable') {
+    return `<eon-sortable compact columns="Backlog,Ready,Review,Done" empty-column-text="Queue is clear" items="Backlog/Write launch brief|Olivia Peyton|success; Ready/Prep stakeholder deck|Victor Norris|warning; Review/Confirm launch date|Maya Chen|danger"></eon-sortable>`;
   }
 
-  if (component.tag === 'jarvis-tile-view') {
-    return `<jarvis-tile-view items="Launch prep|Campaign command room|#dbeafe,#60a5fa|2x1|Featured; North Campus|Innovation lab|#e0f2fe,#38bdf8|1x1|Live; Legacy archive|Read-only records|#e2e8f0,#94a3b8|1x1|Archived|disabled"></jarvis-tile-view>`;
+  if (component.tag === 'eon-tile-view') {
+    return `<eon-tile-view items="Launch prep|Campaign command room|#dbeafe,#60a5fa|2x1|Featured; North Campus|Innovation lab|#e0f2fe,#38bdf8|1x1|Live; Legacy archive|Read-only records|#e2e8f0,#94a3b8|1x1|Archived|disabled"></eon-tile-view>`;
   }
 
-  if (component.tag === 'jarvis-speech-to-text') {
-    return `<jarvis-speech-to-text label="Use voice recognition" display-mode="button" clear-on-start auto-stop-after-final max-length="160" show-options></jarvis-speech-to-text>`;
+  if (component.tag === 'eon-speech-to-text') {
+    return `<eon-speech-to-text label="Use voice recognition" display-mode="button" clear-on-start auto-stop-after-final max-length="160" show-options></eon-speech-to-text>`;
   }
 
-  if (component.tag === 'jarvis-file-manager') {
-    return `<jarvis-file-manager current-path="Files/Widescreen" show-search search-placeholder="Search assets" show-preview selection-mode="multiple"></jarvis-file-manager>`;
+  if (component.tag === 'eon-file-manager') {
+    return `<eon-file-manager current-path="Files/Widescreen" show-search search-placeholder="Search assets" show-preview selection-mode="multiple"></eon-file-manager>`;
   }
 
-  if (component.tag === 'jarvis-html-editor') {
-    return `<jarvis-html-editor show-word-count show-source-toggle toolbar-preset="full"></jarvis-html-editor>`;
+  if (component.tag === 'eon-html-editor') {
+    return `<eon-html-editor show-word-count show-source-toggle toolbar-preset="full"></eon-html-editor>`;
   }
 
-  if (component.tag === 'jarvis-range-selector') {
-    return `<jarvis-range-selector heading="Select house price range" step="5000" min-range="10000" max-range="70000"></jarvis-range-selector>`;
+  if (component.tag === 'eon-range-selector') {
+    return `<eon-range-selector heading="Select house price range" step="5000" min-range="10000" max-range="70000"></eon-range-selector>`;
   }
 
-  if (component.tag === 'jarvis-vector-map') {
-    return `<jarvis-vector-map legend-title="GDP bands" value-format="compact" legend-mode="top-regions"></jarvis-vector-map>`;
+  if (component.tag === 'eon-vector-map') {
+    return `<eon-vector-map legend-title="GDP bands" value-format="compact" legend-mode="top-regions"></eon-vector-map>`;
   }
 
-  if (component.tag === 'jarvis-tree-view') {
-    return `<div style="display:grid;grid-template-columns:minmax(16rem,1fr) minmax(14rem,18rem);gap:1rem;align-items:start;"><jarvis-tree-view items="Stores/Super Mart of the West/Video Players/HD Video Player; Stores/Super Mart of the West/Televisions/SuperLCD 42; Stores/Super Mart of the West/Televisions/SuperLED 50; Stores/Braeburn/Monitors/DesktopLCD 19; Stores/Braeburn/Projectors/Projector Plus" selection-mode="multiple" show-check-boxes-mode="normal" select-nodes-recursive search-enabled search-mode="startsWith" show-toolbar show-select-all show-status search-placeholder="Search products" selected="Stores/Super Mart of the West/Televisions/SuperLCD 42,Stores/Braeburn/Projectors/Projector Plus"></jarvis-tree-view><jarvis-surface elevated><jarvis-stack><strong>Visible-node selection</strong><jarvis-chip removable>SuperLCD 42</jarvis-chip><jarvis-chip removable>Projector Plus</jarvis-chip><p>Search, expand, bulk-select the visible branch set, and clear selection without losing tree context.</p></jarvis-stack></jarvis-surface></div>`;
+  if (component.tag === 'eon-tree-view') {
+    return `<div style="display:grid;grid-template-columns:minmax(16rem,1fr) minmax(14rem,18rem);gap:1rem;align-items:start;"><eon-tree-view items="Stores/Super Mart of the West/Video Players/HD Video Player; Stores/Super Mart of the West/Televisions/SuperLCD 42; Stores/Super Mart of the West/Televisions/SuperLED 50; Stores/Braeburn/Monitors/DesktopLCD 19; Stores/Braeburn/Projectors/Projector Plus" selection-mode="multiple" show-check-boxes-mode="normal" select-nodes-recursive search-enabled search-mode="startsWith" show-toolbar show-select-all show-status search-placeholder="Search products" selected="Stores/Super Mart of the West/Televisions/SuperLCD 42,Stores/Braeburn/Projectors/Projector Plus"></eon-tree-view><eon-surface elevated><eon-stack><strong>Visible-node selection</strong><eon-chip removable>SuperLCD 42</eon-chip><eon-chip removable>Projector Plus</eon-chip><p>Search, expand, bulk-select the visible branch set, and clear selection without losing tree context.</p></eon-stack></eon-surface></div>`;
   }
 
-  if (component.tag === 'jarvis-popup') {
-    return `<jarvis-popup open heading="Employee details" eyebrow="Workspace summary" status="Live" description="Use popup for focused detail, confirmation, and image-driven modal layouts." aria-description="Employee details popup with staged footer actions." initial-focus="close" show-overlay="false" position="top" width="30rem" sticky-footer><span slot="subtitle">652 Avonwick Gate</span><p>Highlight the key content, then use footer actions to drive the next step.</p><div slot="footer"><jarvis-button variant="outline">Send</jarvis-button> <jarvis-button>Close</jarvis-button></div></jarvis-popup>`;
+  if (component.tag === 'eon-popup') {
+    return `<eon-popup open heading="Employee details" eyebrow="Workspace summary" status="Live" description="Use popup for focused detail, confirmation, and image-driven modal layouts." aria-description="Employee details popup with staged footer actions." initial-focus="close" show-overlay="false" position="top" width="30rem" sticky-footer><span slot="subtitle">652 Avonwick Gate</span><p>Highlight the key content, then use footer actions to drive the next step.</p><div slot="footer"><eon-button variant="outline">Send</eon-button> <eon-button>Close</eon-button></div></eon-popup>`;
   }
 
-  if (component.tag === 'jarvis-toast') {
-    return `<jarvis-toast tone="success" heading="Saved" duration="5000" show-progress-bar pause-on-hover show-close-button show-timestamp density="compact"><span slot="actions"><jarvis-button size="sm" variant="ghost">Undo</jarvis-button></span>Workspace changes are live.</jarvis-toast>`;
+  if (component.tag === 'eon-toast') {
+    return `<eon-toast tone="success" heading="Saved" duration="5000" show-progress-bar pause-on-hover show-close-button show-timestamp density="compact"><span slot="actions"><eon-button size="sm" variant="ghost">Undo</eon-button></span>Workspace changes are live.</eon-toast>`;
   }
 
-  if (component.tag === 'jarvis-action-sheet') {
-    return `<jarvis-action-sheet open heading="Choose action" description="Action sheets bundle task-specific commands and keep destructive actions clearly separated." width="24rem" value="Review/Request approval" items="Communication/Call||default|Start a voice call.; Communication/Send message||default|Open the threaded composer.; Review/Request approval||success|Notify approvers.; Review/Export summary||default|Send a shareable recap.; Danger/Delete draft||danger|This cannot be undone."></jarvis-action-sheet>`;
+  if (component.tag === 'eon-action-sheet') {
+    return `<eon-action-sheet open heading="Choose action" description="Action sheets bundle task-specific commands and keep destructive actions clearly separated." width="24rem" value="Review/Request approval" items="Communication/Call||default|Start a voice call.; Communication/Send message||default|Open the threaded composer.; Review/Request approval||success|Notify approvers.; Review/Export summary||default|Send a shareable recap.; Danger/Delete draft||danger|This cannot be undone."></eon-action-sheet>`;
   }
 
-  if (component.tag === 'jarvis-tab-panel') {
-    return `<jarvis-tab-panel items="Not started,Help needed,In progress,Deferred,Completed" current="2" tab-position="left" show-nav-buttons loop height="24rem" badges="3,1,8,2,0" disabled-tabs="Deferred"></jarvis-tab-panel>`;
+  if (component.tag === 'eon-tab-panel') {
+    return `<eon-tab-panel items="Not started,Help needed,In progress,Deferred,Completed" current="2" tab-position="left" show-nav-buttons loop height="24rem" badges="3,1,8,2,0" disabled-tabs="Deferred"></eon-tab-panel>`;
   }
 
-  if (component.tag === 'jarvis-splitter') {
-    return `<jarvis-splitter position="32" step="4" keyboard-resize-step="8" collapsible start-label="Navigation pane" end-label="Editor pane"><jarvis-surface slot="start"><jarvis-stack><strong>Left pane</strong><p>Navigation and filters live here.</p></jarvis-stack></jarvis-surface><jarvis-surface slot="end"><jarvis-stack><strong>Right pane</strong><p>Main content stretches in the remaining area.</p></jarvis-stack></jarvis-surface></jarvis-splitter>`;
+  if (component.tag === 'eon-splitter') {
+    return `<eon-splitter position="32" step="4" keyboard-resize-step="8" collapsible start-label="Navigation pane" end-label="Editor pane"><eon-surface slot="start"><eon-stack><strong>Left pane</strong><p>Navigation and filters live here.</p></eon-stack></eon-surface><eon-surface slot="end"><eon-stack><strong>Right pane</strong><p>Main content stretches in the remaining area.</p></eon-stack></eon-surface></eon-splitter>`;
   }
 
-    if (component.tag === 'jarvis-resizable') {
-      return `<jarvis-resizable width="420" height="260" handles="right bottom" step="12" show-size-label><jarvis-surface><jarvis-stack><strong>Resizable panel</strong><p>Drag the handles to resize this surface.</p></jarvis-stack></jarvis-surface></jarvis-resizable>`;
+    if (component.tag === 'eon-resizable') {
+      return `<eon-resizable width="420" height="260" handles="right bottom" step="12" show-size-label><eon-surface><eon-stack><strong>Resizable panel</strong><p>Drag the handles to resize this surface.</p></eon-stack></eon-surface></eon-resizable>`;
     }
 
-    if (component.tag === 'jarvis-floating-action-button') {
-      return `<div style="display:grid;gap:1rem;"><jarvis-floating-action-button position="inline" extended label="Add row" aria-description="Inline launcher with described follow-up actions." items="New row~Insert a row beneath the active one.|row|success; Invite teammate~Send an access invite to a collaborator.|invite; Duplicate report~Clone the active workspace card.|duplicate"></jarvis-floating-action-button><jarvis-floating-action-button position="inline" label="Compose" direction="right" close-on-select="false" items="Email~Open the email composer.|email; Message~Send a quick chat ping.|message; Delete draft~Remove the current draft.|delete|danger"></jarvis-floating-action-button></div>`;
+    if (component.tag === 'eon-floating-action-button') {
+      return `<div style="display:grid;gap:1rem;"><eon-floating-action-button position="inline" extended label="Add row" aria-description="Inline launcher with described follow-up actions." items="New row~Insert a row beneath the active one.|row|success; Invite teammate~Send an access invite to a collaborator.|invite; Duplicate report~Clone the active workspace card.|duplicate"></eon-floating-action-button><eon-floating-action-button position="inline" label="Compose" direction="right" close-on-select="false" items="Email~Open the email composer.|email; Message~Send a quick chat ping.|message; Delete draft~Remove the current draft.|delete|danger"></eon-floating-action-button></div>`;
     }
 
-    if (component.tag === 'jarvis-sortable') {
-      return `<jarvis-sortable compact columns="Backlog,Ready,Review,Done" empty-column-text="Queue is clear" items="Backlog/Write launch brief|Olivia Peyton|success; Ready/Prep stakeholder deck|Victor Norris|warning; Review/Confirm launch date|Maya Chen|danger"></jarvis-sortable>`;
+    if (component.tag === 'eon-sortable') {
+      return `<eon-sortable compact columns="Backlog,Ready,Review,Done" empty-column-text="Queue is clear" items="Backlog/Write launch brief|Olivia Peyton|success; Ready/Prep stakeholder deck|Victor Norris|warning; Review/Confirm launch date|Maya Chen|danger"></eon-sortable>`;
     }
 
-    if (component.tag === 'jarvis-tile-view') {
-      return `<jarvis-tile-view items="Launch prep|Campaign command room|#dbeafe,#60a5fa|2x1|Featured; North Campus|Innovation lab|#e0f2fe,#38bdf8|1x1|Live; Legacy archive|Read-only records|#e2e8f0,#94a3b8|1x1|Archived|disabled" read-only></jarvis-tile-view>`;
+    if (component.tag === 'eon-tile-view') {
+      return `<eon-tile-view items="Launch prep|Campaign command room|#dbeafe,#60a5fa|2x1|Featured; North Campus|Innovation lab|#e0f2fe,#38bdf8|1x1|Live; Legacy archive|Read-only records|#e2e8f0,#94a3b8|1x1|Archived|disabled" read-only></eon-tile-view>`;
     }
 
-    if (component.tag === 'jarvis-chip') {
-      return `<div class="pill-row"><jarvis-chip>Platform</jarvis-chip><jarvis-chip removable>Selected filter</jarvis-chip></div>`;
+    if (component.tag === 'eon-chip') {
+      return `<div class="pill-row"><eon-chip>Platform</eon-chip><eon-chip removable>Selected filter</eon-chip></div>`;
     }
 
-  if (component.tag === 'jarvis-toolbar') {
-    return `<div style="display:grid;gap:1rem;"><jarvis-toolbar dividers sticky justify="space-between" aria-description="Workspace command bar with back, status, and publish actions."><jarvis-button slot="start" variant="ghost">Back</jarvis-button><jarvis-badge>Live</jarvis-badge><jarvis-button slot="end">Publish</jarvis-button></jarvis-toolbar><jarvis-toolbar density="compact" justify="start" wrap="false" aria-description="Compact command row for dense utility actions."><jarvis-button slot="start" variant="ghost">Refresh</jarvis-button><jarvis-chip>Compact</jarvis-chip><jarvis-button variant="ghost">Export</jarvis-button><jarvis-button slot="end" variant="outline">Share</jarvis-button></jarvis-toolbar></div>`;
+  if (component.tag === 'eon-toolbar') {
+    return `<div style="display:grid;gap:1rem;"><eon-toolbar dividers sticky justify="space-between" aria-description="Workspace command bar with back, status, and publish actions."><eon-button slot="start" variant="ghost">Back</eon-button><eon-badge>Live</eon-badge><eon-button slot="end">Publish</eon-button></eon-toolbar><eon-toolbar density="compact" justify="start" wrap="false" aria-description="Compact command row for dense utility actions."><eon-button slot="start" variant="ghost">Refresh</eon-button><eon-chip>Compact</eon-chip><eon-button variant="ghost">Export</eon-button><eon-button slot="end" variant="outline">Share</eon-button></eon-toolbar></div>`;
   }
 
-  if (component.tag === 'jarvis-section') {
-    return `<jarvis-section heading="Team settings" description="Keep related controls grouped with a clear title."><jarvis-button slot="actions" variant="outline">Manage</jarvis-button><jarvis-stack><jarvis-input label="Workspace name"></jarvis-input><jarvis-switch label="Enable alerts"></jarvis-switch></jarvis-stack></jarvis-section>`;
+  if (component.tag === 'eon-section') {
+    return `<eon-section heading="Team settings" description="Keep related controls grouped with a clear title."><eon-button slot="actions" variant="outline">Manage</eon-button><eon-stack><eon-input label="Workspace name"></eon-input><eon-switch label="Enable alerts"></eon-switch></eon-stack></eon-section>`;
   }
 
-  if (component.tag === 'jarvis-input') {
-    return `<jarvis-input label="Email" helpText="We only use this for account updates." show-clear-button></jarvis-input>`;
+  if (component.tag === 'eon-input') {
+    return `<eon-input label="Email" helpText="We only use this for account updates." show-clear-button></eon-input>`;
   }
 
-  if (component.tag === 'jarvis-textarea') {
-    return `<jarvis-textarea label="Notes" helpText="Capture the important follow-up details." auto-resize max-length="240" show-count></jarvis-textarea>`;
+  if (component.tag === 'eon-textarea') {
+    return `<eon-textarea label="Notes" helpText="Capture the important follow-up details." auto-resize max-length="240" show-count></eon-textarea>`;
   }
 
-  if (component.tag === 'jarvis-checkbox') {
-    return `<jarvis-checkbox label="I agree to the terms" checked required help-text="You must acknowledge the terms before continuing."></jarvis-checkbox>`;
+  if (component.tag === 'eon-checkbox') {
+    return `<eon-checkbox label="I agree to the terms" checked required help-text="You must acknowledge the terms before continuing."></eon-checkbox>`;
   }
 
-  if (component.tag === 'jarvis-switch') {
-    return `<jarvis-switch label="Enable notifications" checked show-text on-text="On" off-text="Off" help-text="Immediate toggles should communicate their effect without extra explanation."></jarvis-switch>`;
+  if (component.tag === 'eon-switch') {
+    return `<eon-switch label="Enable notifications" checked show-text on-text="On" off-text="Off" help-text="Immediate toggles should communicate their effect without extra explanation."></eon-switch>`;
   }
 
-  if (component.tag === 'jarvis-dialog') {
-    return `<jarvis-dialog open label="Confirm deletion" heading="Delete item" description="Use dialog for compact confirmation and focused review steps." initial-focus="close"><p>This action cannot be undone.</p><div slot="footer"><jarvis-button variant="outline">Cancel</jarvis-button><jarvis-button>Delete</jarvis-button></div></jarvis-dialog>`;
+  if (component.tag === 'eon-dialog') {
+    return `<eon-dialog open label="Confirm deletion" heading="Delete item" description="Use dialog for compact confirmation and focused review steps." initial-focus="close"><p>This action cannot be undone.</p><div slot="footer"><eon-button variant="outline">Cancel</eon-button><eon-button>Delete</eon-button></div></eon-dialog>`;
   }
 
   return `<${component.tag}>${titleCase(component.name)}</${component.tag}>`;
@@ -695,11 +711,11 @@ function createFrameworkExamples(_component: ComponentManifestEntry, markup: str
   return {
     web: html,
     react: `import { useEffect } from 'react';
-import { ensureJarvisReact } from '@jarvis/react';
+import { ensureEonReact } from '@eonui/react';
 
 export function Example() {
   useEffect(() => {
-    ensureJarvisReact();
+    ensureEonReact();
   }, []);
 
   return (
@@ -709,9 +725,9 @@ ${indentBlock(html, 6)}
   );
 }`,
     angular: `import { Component } from '@angular/core';
-import { ensureJarvisAngular } from '@jarvis/angular';
+import { ensureEonAngular } from '@eonui/angular';
 
-ensureJarvisAngular();
+ensureEonAngular();
 
 @Component({
   selector: 'app-example',
@@ -722,9 +738,9 @@ ${indentBlock(html, 4)}
 })
 export class ExampleComponent {}`,
     vue: `<script setup lang="ts">
-import { ensureJarvisVue } from '@jarvis/vue';
+import { ensureEonVue } from '@eonui/vue';
 
-ensureJarvisVue();
+ensureEonVue();
 </script>
 
 <template>
@@ -806,7 +822,7 @@ function renderCodeTabs(
     </div>
     ${tabs
       .map(
-        (tab) => `<pre data-code-panel="${tab.key}"><code>${escapeHtml(codes[tab.key])}</code></pre>`
+        (tab) => `<pre data-code-panel="${tab.key}">${escapeHtml(codes[tab.key])}</pre>`
       )
       .join('')}
   </section>
@@ -862,7 +878,7 @@ function renderEditor(markup: string, id: string): string {
       <div class="editor-pane">
         <div class="code-pane-head">
           <strong>Web Components markup</strong>
-          <span class="quiet">Paste any Jarvis markup here, then run it.</span>
+          <span class="quiet">Paste any Eon markup here, then run it.</span>
         </div>
         <div class="monaco-banner" data-playground-editor-label="${id}">Monaco editor loading...</div>
         <div class="code-editor-monaco" data-playground-editor="${id}"></div>
@@ -999,12 +1015,12 @@ function renderSpec(component: ComponentManifestEntry): string {
 }
 
 async function loadStaticAsset(pathname: string): Promise<{ body: Buffer; contentType: string } | null> {
-  if (!pathname.startsWith('/jarvis-dist/')) {
+  if (!pathname.startsWith('/eon-dist/')) {
     return null;
   }
 
-  const relativePath = pathname.replace('/jarvis-dist/', '');
-  const filePath = resolve(process.cwd(), '../../packages/jarvis-core/dist', relativePath);
+  const relativePath = pathname.replace('/eon-dist/', '');
+  const filePath = resolve(process.cwd(), '../../packages/eon-core/dist', relativePath);
   const body = await readFile(filePath);
   const extension = extname(filePath);
   const contentType =
@@ -1023,394 +1039,394 @@ function createVariantGallery(component: ComponentManifestEntry): Array<{ title:
   const manifestItems = dedupeGalleryItems(deriveManifestExamples(component));
   const manualItems = (() => {
     switch (component.tag) {
-    case 'jarvis-button':
+    case 'eon-button':
       return [
-        { title: 'Variants', markup: `<div class="pill-row"><jarvis-button variant="solid">Primary</jarvis-button><jarvis-button variant="outline">Secondary</jarvis-button><jarvis-button variant="ghost">Ghost</jarvis-button></div>` },
-        { title: 'States', markup: `<div class="pill-row"><jarvis-button>Default</jarvis-button><jarvis-button loading>Loading</jarvis-button><jarvis-button disabled>Disabled</jarvis-button></div>` }
+        { title: 'Variants', markup: `<div class="pill-row"><eon-button variant="solid">Primary</eon-button><eon-button variant="outline">Secondary</eon-button><eon-button variant="ghost">Ghost</eon-button></div>` },
+        { title: 'States', markup: `<div class="pill-row"><eon-button>Default</eon-button><eon-button loading>Loading</eon-button><eon-button disabled>Disabled</eon-button></div>` }
       ];
-    case 'jarvis-icon-button':
+    case 'eon-icon-button':
       return [
-        { title: 'Sizes', markup: `<div class="pill-row"><jarvis-icon-button size="sm" label="Small action">+</jarvis-icon-button><jarvis-icon-button size="md" label="Medium action">+</jarvis-icon-button><jarvis-icon-button size="lg" label="Large action">+</jarvis-icon-button></div>` },
-        { title: 'States', markup: `<div class="pill-row"><jarvis-icon-button label="Default action">+</jarvis-icon-button><jarvis-icon-button loading label="Loading action"></jarvis-icon-button><jarvis-icon-button disabled label="Disabled action">+</jarvis-icon-button></div>` }
+        { title: 'Sizes', markup: `<div class="pill-row"><eon-icon-button size="sm" label="Small action">+</eon-icon-button><eon-icon-button size="md" label="Medium action">+</eon-icon-button><eon-icon-button size="lg" label="Large action">+</eon-icon-button></div>` },
+        { title: 'States', markup: `<div class="pill-row"><eon-icon-button label="Default action">+</eon-icon-button><eon-icon-button loading label="Loading action"></eon-icon-button><eon-icon-button disabled label="Disabled action">+</eon-icon-button></div>` }
       ];
-    case 'jarvis-input':
+    case 'eon-input':
       return [
-        { title: 'Field states', markup: `<div class="grid cards"><jarvis-input label="Email" value="hello@jarvis.dev"></jarvis-input><jarvis-input label="Search" placeholder="Find a component"></jarvis-input><jarvis-input label="Required" required help-text="This field is required."></jarvis-input><jarvis-input label="Invalid" invalid error-text="Please enter a valid value."></jarvis-input></div>` },
-        { title: 'Clear, password reveal, and character count', markup: `<div class="grid cards"><jarvis-input label="Clearable search" value="Design system" show-clear-button></jarvis-input><jarvis-input label="Password" type="password" value="hunter2" show-reveal-button></jarvis-input><jarvis-input label="Workspace name" value="Jarvis Enterprise Platform" max-length="32" show-count></jarvis-input></div>` },
-        { title: 'Readonly and message patterns', markup: `<div class="grid cards"><jarvis-input label="Readonly email" value="ops@jarvis.dev" read-only></jarvis-input><jarvis-input label="Recovery email" value="" show-clear-button invalid error-text="Add a backup email before you continue."></jarvis-input></div>` },
-        { title: 'Credentials step before final review', markup: `<div class="grid cards"><jarvis-surface><jarvis-stack gap="1rem"><strong>Credentials</strong><jarvis-input label="Email" value="owner@jarvis.dev" required help-text="Used for release and recovery updates." show-clear-button></jarvis-input><jarvis-input label="Password" type="password" value="strong-password" required></jarvis-input><jarvis-input label="Confirm password" type="password" value="short" invalid error-text="Confirmation must match the original password."></jarvis-input><jarvis-button>Continue to review</jarvis-button></jarvis-stack></jarvis-surface></div>` }
+        { title: 'Field states', markup: `<div class="grid cards"><eon-input label="Email" value="hello@eon.dev"></eon-input><eon-input label="Search" placeholder="Find a component"></eon-input><eon-input label="Required" required help-text="This field is required."></eon-input><eon-input label="Invalid" invalid error-text="Please enter a valid value."></eon-input></div>` },
+        { title: 'Clear, password reveal, and character count', markup: `<div class="grid cards"><eon-input label="Clearable search" value="Design system" show-clear-button></eon-input><eon-input label="Password" type="password" value="hunter2" show-reveal-button></eon-input><eon-input label="Workspace name" value="Eon Enterprise Platform" max-length="32" show-count></eon-input></div>` },
+        { title: 'Readonly and message patterns', markup: `<div class="grid cards"><eon-input label="Readonly email" value="ops@eon.dev" read-only></eon-input><eon-input label="Recovery email" value="" show-clear-button invalid error-text="Add a backup email before you continue."></eon-input></div>` },
+        { title: 'Credentials step before final review', markup: `<div class="grid cards"><eon-surface><eon-stack gap="1rem"><strong>Credentials</strong><eon-input label="Email" value="owner@eon.dev" required help-text="Used for release and recovery updates." show-clear-button></eon-input><eon-input label="Password" type="password" value="strong-password" required></eon-input><eon-input label="Confirm password" type="password" value="short" invalid error-text="Confirmation must match the original password."></eon-input><eon-button>Continue to review</eon-button></eon-stack></eon-surface></div>` }
       ];
-    case 'jarvis-textarea':
+    case 'eon-textarea':
       return [
-        { title: 'Multiline states', markup: `<div class="grid cards"><jarvis-textarea label="Default mode" value="Prepare launch notes and share the meeting summary."></jarvis-textarea><jarvis-textarea label="Invalid notes" invalid error-text="A written explanation is required."></jarvis-textarea></div>` },
-        { title: 'Auto resize and character count', markup: `<div class="grid cards"><jarvis-textarea label="Executive summary" value="Prepare the final rollout memo and include the validation checkpoints for design, engineering, and support." auto-resize max-length="220" show-count></jarvis-textarea><jarvis-textarea label="Readonly transcript" value="This text area is locked for audit review." read-only></jarvis-textarea></div>` },
-        { title: 'Reviewer notes in a submit workflow', markup: `<div class="grid cards"><jarvis-surface><jarvis-stack gap="1rem"><strong>Release notes</strong><jarvis-textarea label="Summary for approvers" auto-resize value="Localization is complete and analytics have been verified on staging." help-text="Keep the first paragraph short so a review popup can reuse it."></jarvis-textarea><jarvis-textarea label="Required implementation note" invalid error-text="Document the rollback plan before requesting approval."></jarvis-textarea></jarvis-stack></jarvis-surface></div>` }
+        { title: 'Multiline states', markup: `<div class="grid cards"><eon-textarea label="Default mode" value="Prepare launch notes and share the meeting summary."></eon-textarea><eon-textarea label="Invalid notes" invalid error-text="A written explanation is required."></eon-textarea></div>` },
+        { title: 'Auto resize and character count', markup: `<div class="grid cards"><eon-textarea label="Executive summary" value="Prepare the final rollout memo and include the validation checkpoints for design, engineering, and support." auto-resize max-length="220" show-count></eon-textarea><eon-textarea label="Readonly transcript" value="This text area is locked for audit review." read-only></eon-textarea></div>` },
+        { title: 'Reviewer notes in a submit workflow', markup: `<div class="grid cards"><eon-surface><eon-stack gap="1rem"><strong>Release notes</strong><eon-textarea label="Summary for approvers" auto-resize value="Localization is complete and analytics have been verified on staging." help-text="Keep the first paragraph short so a review popup can reuse it."></eon-textarea><eon-textarea label="Required implementation note" invalid error-text="Document the rollback plan before requesting approval."></eon-textarea></eon-stack></eon-surface></div>` }
       ];
-    case 'jarvis-checkbox':
+    case 'eon-checkbox':
       return [
-        { title: 'Checked, mixed, and invalid', markup: `<div class="grid cards"><jarvis-checkbox label="Checked" checked></jarvis-checkbox><jarvis-checkbox label="Indeterminate" indeterminate help-text="Use mixed state when a nested list is only partially selected."></jarvis-checkbox><jarvis-checkbox label="Invalid" invalid error-text="A consent choice is required."></jarvis-checkbox></div>` },
-        { title: 'Three-state, required, and readonly', markup: `<div class="grid cards"><jarvis-checkbox label="Required consent" required help-text="Confirm this before we submit the request."></jarvis-checkbox><jarvis-checkbox label="Three-state workflow" three-state indeterminate></jarvis-checkbox><jarvis-checkbox label="Readonly acceptance" checked read-only help-text="This acceptance was locked after approval."></jarvis-checkbox></div>` },
-        { title: 'Size and label position options', markup: `<div class="grid cards"><jarvis-checkbox label="Small option" size="sm"></jarvis-checkbox><jarvis-checkbox label="Medium option" size="md" checked></jarvis-checkbox><jarvis-checkbox label="Large option" size="lg" checked label-position="start"></jarvis-checkbox></div>` }
+        { title: 'Checked, mixed, and invalid', markup: `<div class="grid cards"><eon-checkbox label="Checked" checked></eon-checkbox><eon-checkbox label="Indeterminate" indeterminate help-text="Use mixed state when a nested list is only partially selected."></eon-checkbox><eon-checkbox label="Invalid" invalid error-text="A consent choice is required."></eon-checkbox></div>` },
+        { title: 'Three-state, required, and readonly', markup: `<div class="grid cards"><eon-checkbox label="Required consent" required help-text="Confirm this before we submit the request."></eon-checkbox><eon-checkbox label="Three-state workflow" three-state indeterminate></eon-checkbox><eon-checkbox label="Readonly acceptance" checked read-only help-text="This acceptance was locked after approval."></eon-checkbox></div>` },
+        { title: 'Size and label position options', markup: `<div class="grid cards"><eon-checkbox label="Small option" size="sm"></eon-checkbox><eon-checkbox label="Medium option" size="md" checked></eon-checkbox><eon-checkbox label="Large option" size="lg" checked label-position="start"></eon-checkbox></div>` }
       ];
-    case 'jarvis-radio':
+    case 'eon-radio':
       return [
-        { title: 'Single radio with helper text', markup: `<div class="grid cards"><jarvis-radio label="Primary contact" name="contact-choice" value="primary" checked help-text="Use a single radio when the surrounding copy already explains the selection context."></jarvis-radio><jarvis-radio label="Readonly choice" name="locked-choice" value="locked" checked read-only help-text="This answer was locked after approval."></jarvis-radio></div>` },
-        { title: 'Required and invalid radios', markup: `<div class="grid cards"><jarvis-radio label="Required approval" name="approval-choice" value="approved" required help-text="Choose whether this change is approved."></jarvis-radio><jarvis-radio label="Invalid radio choice" name="audit-choice" value="audit" invalid error-text="Pick a compliant option before continuing."></jarvis-radio></div>` }
+        { title: 'Single radio with helper text', markup: `<div class="grid cards"><eon-radio label="Primary contact" name="contact-choice" value="primary" checked help-text="Use a single radio when the surrounding copy already explains the selection context."></eon-radio><eon-radio label="Readonly choice" name="locked-choice" value="locked" checked read-only help-text="This answer was locked after approval."></eon-radio></div>` },
+        { title: 'Required and invalid radios', markup: `<div class="grid cards"><eon-radio label="Required approval" name="approval-choice" value="approved" required help-text="Choose whether this change is approved."></eon-radio><eon-radio label="Invalid radio choice" name="audit-choice" value="audit" invalid error-text="Pick a compliant option before continuing."></eon-radio></div>` }
       ];
-    case 'jarvis-switch':
+    case 'eon-switch':
       return [
-        { title: 'On, off, and disabled', markup: `<div class="grid cards"><jarvis-switch label="Switched on" checked></jarvis-switch><jarvis-switch label="Switched off"></jarvis-switch><jarvis-switch label="Disabled" checked disabled></jarvis-switch></div>` },
-        { title: 'Track text and sizing', markup: `<div class="grid cards"><jarvis-switch label="Live updates" checked show-text on-text="Live" off-text="Idle"></jarvis-switch><jarvis-switch label="Compact mode" size="sm" show-text></jarvis-switch><jarvis-switch label="Executive mode" size="lg" checked show-text label-position="start"></jarvis-switch></div>` },
-        { title: 'Readonly, helper, and validation', markup: `<div class="grid cards"><jarvis-switch label="Readonly automation" checked read-only show-text on-text="Auto" off-text="Manual" help-text="This automation is locked by policy."></jarvis-switch><jarvis-switch label="Validation and helper text" required invalid error-text="Choose whether notifications are enabled."></jarvis-switch></div>` }
+        { title: 'On, off, and disabled', markup: `<div class="grid cards"><eon-switch label="Switched on" checked></eon-switch><eon-switch label="Switched off"></eon-switch><eon-switch label="Disabled" checked disabled></eon-switch></div>` },
+        { title: 'Track text and sizing', markup: `<div class="grid cards"><eon-switch label="Live updates" checked show-text on-text="Live" off-text="Idle"></eon-switch><eon-switch label="Compact mode" size="sm" show-text></eon-switch><eon-switch label="Executive mode" size="lg" checked show-text label-position="start"></eon-switch></div>` },
+        { title: 'Readonly, helper, and validation', markup: `<div class="grid cards"><eon-switch label="Readonly automation" checked read-only show-text on-text="Auto" off-text="Manual" help-text="This automation is locked by policy."></eon-switch><eon-switch label="Validation and helper text" required invalid error-text="Choose whether notifications are enabled."></eon-switch></div>` }
       ];
-    case 'jarvis-select':
+    case 'eon-select':
       return [
-        { title: 'Select states', markup: `<div class="grid cards"><jarvis-select label="Role" options="Admin,Editor,Viewer"></jarvis-select><jarvis-select label="Required" required options="One,Two,Three"></jarvis-select><jarvis-select label="Invalid" invalid error-text="Choose a value." options="One,Two,Three"></jarvis-select></div>` }
+        { title: 'Select states', markup: `<div class="grid cards"><eon-select label="Role" options="Admin,Editor,Viewer"></eon-select><eon-select label="Required" required options="One,Two,Three"></eon-select><eon-select label="Invalid" invalid error-text="Choose a value." options="One,Two,Three"></eon-select></div>` }
       ];
-    case 'jarvis-alert':
+    case 'eon-alert':
       return [
-        { title: 'Tones', markup: `<div class="grid cards"><jarvis-alert tone="neutral" heading="Neutral">General guidance.</jarvis-alert><jarvis-alert tone="success" heading="Success">Changes saved.</jarvis-alert><jarvis-alert tone="warning" heading="Warning">Review your configuration.</jarvis-alert><jarvis-alert tone="danger" heading="Danger" polite="assertive">Something went wrong.</jarvis-alert></div>` }
+        { title: 'Tones', markup: `<div class="grid cards"><eon-alert tone="neutral" heading="Neutral">General guidance.</eon-alert><eon-alert tone="success" heading="Success">Changes saved.</eon-alert><eon-alert tone="warning" heading="Warning">Review your configuration.</eon-alert><eon-alert tone="danger" heading="Danger" polite="assertive">Something went wrong.</eon-alert></div>` }
       ];
-    case 'jarvis-chip':
+    case 'eon-chip':
       return [
-        { title: 'Static and removable', markup: `<div class="pill-row"><jarvis-chip>Platform</jarvis-chip><jarvis-chip removable>Selected filter</jarvis-chip><jarvis-chip removable>Assigned</jarvis-chip></div>` }
+        { title: 'Static and removable', markup: `<div class="pill-row"><eon-chip>Platform</eon-chip><eon-chip removable>Selected filter</eon-chip><eon-chip removable>Assigned</eon-chip></div>` }
       ];
-    case 'jarvis-avatar':
+    case 'eon-avatar':
       return [
-        { title: 'Initials fallback', markup: `<div class="grid cards"><jarvis-avatar name="Priya Nair"></jarvis-avatar><jarvis-avatar name="Design Ops"></jarvis-avatar><jarvis-avatar name="QA Team"></jarvis-avatar><jarvis-avatar name="Long Name Here" size="lg"></jarvis-avatar></div>` },
-        { title: 'Image and fallback mix', markup: `<div class="grid cards"><jarvis-avatar size="sm" name="Nora Wells" src="https://images.unsplash.com/photo-1488161628813-04466f872be2?auto=format&fit=crop&w=200&q=80"></jarvis-avatar><jarvis-avatar size="sm" name="Mia Chen" src=""></jarvis-avatar><jarvis-avatar size="lg" name="Ops Desk" src="https://images.unsplash.com/photo-1521577352947-9bb587dbecbd?auto=format&fit=crop&w=300&q=80"></jarvis-avatar></div>` }
+        { title: 'Initials fallback', markup: `<div class="grid cards"><eon-avatar name="Priya Nair"></eon-avatar><eon-avatar name="Design Ops"></eon-avatar><eon-avatar name="QA Team"></eon-avatar><eon-avatar name="Long Name Here" size="lg"></eon-avatar></div>` },
+        { title: 'Image and fallback mix', markup: `<div class="grid cards"><eon-avatar size="sm" name="Nora Wells" src="https://images.unsplash.com/photo-1488161628813-04466f872be2?auto=format&fit=crop&w=200&q=80"></eon-avatar><eon-avatar size="sm" name="Mia Chen" src=""></eon-avatar><eon-avatar size="lg" name="Ops Desk" src="https://images.unsplash.com/photo-1521577352947-9bb587dbecbd?auto=format&fit=crop&w=300&q=80"></eon-avatar></div>` }
       ];
-    case 'jarvis-card':
+    case 'eon-card':
       return [
-        { title: 'Slots and hierarchy', markup: `<jarvis-card><div slot="header"><strong>Release review</strong></div><p>Use card headers for quick scan and footer for primary action.</p><div slot="footer"><jarvis-button size="sm" variant="outline">Start review</jarvis-button></div></jarvis-card>` },
-        { title: 'Surface within grid', markup: `<div class="grid cards"><jarvis-card><div slot="header"><strong>Ops dashboard</strong></div><jarvis-stack gap="0.65rem"><p>Keep each card focused. Use compact spacing to preserve rhythm in long lists.</p><jarvis-badge tone="success">Healthy</jarvis-badge></jarvis-stack><div slot="footer"><jarvis-button size="sm">Open</jarvis-button></div></jarvis-card><jarvis-card><div slot="header"><strong>Risk register</strong></div><p>Store related metadata and actions together.</p><div slot="footer"><jarvis-button size="sm" variant="ghost">View details</jarvis-button></div></jarvis-card></div>` }
+        { title: 'Slots and hierarchy', markup: `<eon-card><div slot="header"><strong>Release review</strong></div><p>Use card headers for quick scan and footer for primary action.</p><div slot="footer"><eon-button size="sm" variant="outline">Start review</eon-button></div></eon-card>` },
+        { title: 'Surface within grid', markup: `<div class="grid cards"><eon-card><div slot="header"><strong>Ops dashboard</strong></div><eon-stack gap="0.65rem"><p>Keep each card focused. Use compact spacing to preserve rhythm in long lists.</p><eon-badge tone="success">Healthy</eon-badge></eon-stack><div slot="footer"><eon-button size="sm">Open</eon-button></div></eon-card><eon-card><div slot="header"><strong>Risk register</strong></div><p>Store related metadata and actions together.</p><div slot="footer"><eon-button size="sm" variant="ghost">View details</eon-button></div></eon-card></div>` }
       ];
-    case 'jarvis-divider':
+    case 'eon-divider':
       return [
-        { title: 'Horizontal separators', markup: `<div class="grid cards"><p>Context before divider</p><jarvis-divider></jarvis-divider><p>Context after divider</p><jarvis-divider></jarvis-divider><p>Last block</p></div>` },
-        { title: 'Vertical divider in header rows', markup: `<div style="display:grid;grid-template-columns:auto 1px auto 1px auto;align-items:center;justify-content:center;gap:1.1rem;min-height:4.5rem"><div>Design</div><jarvis-divider orientation="vertical"></jarvis-divider><div>Engineering</div><jarvis-divider orientation="vertical"></jarvis-divider><div>Ops</div></div>` }
+        { title: 'Horizontal separators', markup: `<div class="grid cards"><p>Context before divider</p><eon-divider></eon-divider><p>Context after divider</p><eon-divider></eon-divider><p>Last block</p></div>` },
+        { title: 'Vertical divider in header rows', markup: `<div style="display:grid;grid-template-columns:auto 1px auto 1px auto;align-items:center;justify-content:center;gap:1.1rem;min-height:4.5rem"><div>Design</div><eon-divider orientation="vertical"></eon-divider><div>Engineering</div><eon-divider orientation="vertical"></eon-divider><div>Ops</div></div>` }
       ];
-    case 'jarvis-empty-state':
+    case 'eon-empty-state':
       return [
-        { title: 'Search empty state', markup: `<jarvis-empty-state heading="No results" description="Try a broader term or clear all filters."><span slot="visual">🔍</span><div slot="actions"><jarvis-button variant="outline">Clear filters</jarvis-button><jarvis-button>Try again</jarvis-button></div></jarvis-empty-state>` },
-        { title: 'Upload empty state', markup: `<jarvis-empty-state heading="No files yet" description="Add files to begin your submission packet." ><span slot="visual">📂</span><div slot="actions"><jarvis-button>Upload first file</jarvis-button></div></jarvis-empty-state>` }
+        { title: 'Search empty state', markup: `<eon-empty-state heading="No results" description="Try a broader term or clear all filters."><span slot="visual">🔍</span><div slot="actions"><eon-button variant="outline">Clear filters</eon-button><eon-button>Try again</eon-button></div></eon-empty-state>` },
+        { title: 'Upload empty state', markup: `<eon-empty-state heading="No files yet" description="Add files to begin your submission packet." ><span slot="visual">📂</span><div slot="actions"><eon-button>Upload first file</eon-button></div></eon-empty-state>` }
       ];
-    case 'jarvis-accordion':
+    case 'eon-accordion':
       return [
-        { title: 'Single and stacked disclosures', markup: `<div class="grid cards"><jarvis-accordion summary="Advanced settings"><p>Use accordion for secondary content that can stay collapsed by default.</p></jarvis-accordion><jarvis-accordion items="Workspace defaults|Control the base workspace experience and save preferred launch views.|; Notifications|Route alerts by priority, owner, and working hours.|; Escalations|Choose who gets paged after hours and which channels stay enabled.|" value="Workspace defaults"></jarvis-accordion></div>` },
-        { title: 'Multiple and readonly behavior', markup: `<div class="grid cards"><jarvis-accordion items="Brand tone|Choose how editorial UI voice is framed for this release.|; Access review|Confirm reviewer coverage before launch.|; Escalation path|Document after-hours ownership and routing.|" multiple value="Brand tone;Access review"></jarvis-accordion><jarvis-accordion items="Policy summary|This disclosure is locked after handoff.|; Audit history|Change history stays visible but stays read-only after policy review.|" read-only value="Policy summary"></jarvis-accordion></div>` }
+        { title: 'Single and stacked disclosures', markup: `<div class="grid cards"><eon-accordion summary="Advanced settings"><p>Use accordion for secondary content that can stay collapsed by default.</p></eon-accordion><eon-accordion items="Workspace defaults|Control the base workspace experience and save preferred launch views.|; Notifications|Route alerts by priority, owner, and working hours.|; Escalations|Choose who gets paged after hours and which channels stay enabled.|" value="Workspace defaults"></eon-accordion></div>` },
+        { title: 'Multiple and readonly behavior', markup: `<div class="grid cards"><eon-accordion items="Brand tone|Choose how editorial UI voice is framed for this release.|; Access review|Confirm reviewer coverage before launch.|; Escalation path|Document after-hours ownership and routing.|" multiple value="Brand tone;Access review"></eon-accordion><eon-accordion items="Policy summary|This disclosure is locked after handoff.|; Audit history|Change history stays visible but stays read-only after policy review.|" read-only value="Policy summary"></eon-accordion></div>` }
       ];
-    case 'jarvis-stack':
+    case 'eon-stack':
       return [
-        { title: 'Spacing and alignment options', markup: `<jarvis-stack gap="0.75rem" align="start"><jarvis-badge>Start aligned</jarvis-badge><jarvis-input label="Workspace name" value="Operations"></jarvis-input><jarvis-button>Continue</jarvis-button></jarvis-stack>` },
-        { title: 'Compact and compact center flow', markup: `<jarvis-stack gap="0.5rem" align="center"><jarvis-badge>Compact</jarvis-badge><jarvis-chip>Ready</jarvis-chip><jarvis-button size="sm" variant="ghost">Next</jarvis-button></jarvis-stack>` }
+        { title: 'Spacing and alignment options', markup: `<eon-stack gap="0.75rem" align="start"><eon-badge>Start aligned</eon-badge><eon-input label="Workspace name" value="Operations"></eon-input><eon-button>Continue</eon-button></eon-stack>` },
+        { title: 'Compact and compact center flow', markup: `<eon-stack gap="0.5rem" align="center"><eon-badge>Compact</eon-badge><eon-chip>Ready</eon-chip><eon-button size="sm" variant="ghost">Next</eon-button></eon-stack>` }
       ];
-    case 'jarvis-grid':
+    case 'eon-grid':
       return [
-        { title: 'Adaptive two-column cards', markup: `<jarvis-grid min="12rem" gap="1rem"><jarvis-surface><jarvis-stack><strong>A</strong><p>Responsive cells adapt to available width.</p></jarvis-stack></jarvis-surface><jarvis-surface><jarvis-stack><strong>B</strong><p>Use grids for dashboards and option clusters.</p></jarvis-stack></jarvis-surface><jarvis-surface><jarvis-stack><strong>C</strong><p>Each cell stays consistent in rhythm.</p></jarvis-stack></jarvis-surface><jarvis-surface><jarvis-stack><strong>D</strong><p>Add spacing control through density tokens.</p></jarvis-stack></jarvis-surface></jarvis-grid>` },
-        { title: 'Dense, narrow cards', markup: `<jarvis-grid min="8rem" gap="0.8rem"><jarvis-card><div slot="header"><strong>Step 1</strong></div><p>Collect</p></jarvis-card><jarvis-card><div slot="header"><strong>Step 2</strong></div><p>Validate</p></jarvis-card><jarvis-card><div slot="header"><strong>Step 3</strong></div><p>Publish</p></jarvis-card></jarvis-grid>` }
+        { title: 'Adaptive two-column cards', markup: `<eon-grid min="12rem" gap="1rem"><eon-surface><eon-stack><strong>A</strong><p>Responsive cells adapt to available width.</p></eon-stack></eon-surface><eon-surface><eon-stack><strong>B</strong><p>Use grids for dashboards and option clusters.</p></eon-stack></eon-surface><eon-surface><eon-stack><strong>C</strong><p>Each cell stays consistent in rhythm.</p></eon-stack></eon-surface><eon-surface><eon-stack><strong>D</strong><p>Add spacing control through density tokens.</p></eon-stack></eon-surface></eon-grid>` },
+        { title: 'Dense, narrow cards', markup: `<eon-grid min="8rem" gap="0.8rem"><eon-card><div slot="header"><strong>Step 1</strong></div><p>Collect</p></eon-card><eon-card><div slot="header"><strong>Step 2</strong></div><p>Validate</p></eon-card><eon-card><div slot="header"><strong>Step 3</strong></div><p>Publish</p></eon-card></eon-grid>` }
       ];
-    case 'jarvis-popover':
+    case 'eon-popover':
       return [
-        { title: 'Anchored details and side placement', markup: `<div class="grid cards"><jarvis-popover trigger-label="Review details" heading="Workspace summary" description="Quick context for reviewers" width="18rem"><jarvis-stack><p>Use a popover when people need lightweight context without leaving the current surface.</p><jarvis-button variant="outline">Open workspace</jarvis-button></jarvis-stack></jarvis-popover><jarvis-popover trigger-label="Open side note" placement="right" heading="Shipping guidance" description="Shown beside the trigger for dense forms."><p>Right placement keeps secondary details close to the field that needs them.</p></jarvis-popover></div>` },
-        { title: 'Hover trigger and compact action card', markup: `<div class="grid cards"><jarvis-popover trigger-label="Hover preview" trigger-mode="hover" heading="Release note" description="A lightweight preview surface."><p>Use hover only when the trigger is obvious and the content stays short.</p></jarvis-popover><jarvis-popover trigger-label="Quiet card" placement="left" width="16rem" heading="Reviewer note"><p>Use a compact anchored card when the content stays short but needs more presence than a tooltip.</p></jarvis-popover></div>` }
+        { title: 'Anchored details and side placement', markup: `<div class="grid cards"><eon-popover trigger-label="Review details" heading="Workspace summary" description="Quick context for reviewers" width="18rem"><eon-stack><p>Use a popover when people need lightweight context without leaving the current surface.</p><eon-button variant="outline">Open workspace</eon-button></eon-stack></eon-popover><eon-popover trigger-label="Open side note" placement="right" heading="Shipping guidance" description="Shown beside the trigger for dense forms."><p>Right placement keeps secondary details close to the field that needs them.</p></eon-popover></div>` },
+        { title: 'Hover trigger and compact action card', markup: `<div class="grid cards"><eon-popover trigger-label="Hover preview" trigger-mode="hover" heading="Release note" description="A lightweight preview surface."><p>Use hover only when the trigger is obvious and the content stays short.</p></eon-popover><eon-popover trigger-label="Quiet card" placement="left" width="16rem" heading="Reviewer note"><p>Use a compact anchored card when the content stays short but needs more presence than a tooltip.</p></eon-popover></div>` }
       ];
-    case 'jarvis-dropdown-menu':
+    case 'eon-dropdown-menu':
       return [
-        { title: 'Grouped actions, descriptions, and danger states', markup: `<div class="grid cards"><jarvis-dropdown-menu label="More actions" items="Workspace/Edit|edit||Update the current workspace details.; Workspace/Duplicate|duplicate||Create a copy for experimentation.; Reviews/Archive|archive||Move this workspace to the archive.; Reviews/Delete|delete|danger|This action cannot be undone." show-selection value="duplicate"></jarvis-dropdown-menu><jarvis-dropdown-menu label="Hover actions" trigger-mode="hover" placement="top-end" items="Customer message/Reply|reply||Send a quick response.; Customer message/Assign owner|assign||Route the thread to another owner.; Customer message/Close ticket|close|danger|Close the open support request."></jarvis-dropdown-menu></div>` },
-        { title: 'Selection and empty fallback', markup: `<div class="grid cards"><jarvis-dropdown-menu label="Current status" items="Status/In review|review||Currently being reviewed.; Status/Approved|approved||Ready to publish.; Status/On hold|hold||Waiting on dependencies." show-selection value="approved"></jarvis-dropdown-menu><jarvis-dropdown-menu label="Empty state" no-data-text="No contextual actions are available right now."></jarvis-dropdown-menu></div>` }
+        { title: 'Grouped actions, descriptions, and danger states', markup: `<div class="grid cards"><eon-dropdown-menu label="More actions" items="Workspace/Edit|edit||Update the current workspace details.; Workspace/Duplicate|duplicate||Create a copy for experimentation.; Reviews/Archive|archive||Move this workspace to the archive.; Reviews/Delete|delete|danger|This action cannot be undone." show-selection value="duplicate"></eon-dropdown-menu><eon-dropdown-menu label="Hover actions" trigger-mode="hover" placement="top-end" items="Customer message/Reply|reply||Send a quick response.; Customer message/Assign owner|assign||Route the thread to another owner.; Customer message/Close ticket|close|danger|Close the open support request."></eon-dropdown-menu></div>` },
+        { title: 'Selection and empty fallback', markup: `<div class="grid cards"><eon-dropdown-menu label="Current status" items="Status/In review|review||Currently being reviewed.; Status/Approved|approved||Ready to publish.; Status/On hold|hold||Waiting on dependencies." show-selection value="approved"></eon-dropdown-menu><eon-dropdown-menu label="Empty state" no-data-text="No contextual actions are available right now."></eon-dropdown-menu></div>` }
       ];
-    case 'jarvis-tooltip':
+    case 'eon-tooltip':
       return [
-        { title: 'Hover, focus, and click tooltips', markup: `<div class="grid cards"><jarvis-tooltip text="Helpful supporting text" position="top"><jarvis-button variant="outline">Hover trigger</jarvis-button></jarvis-tooltip><jarvis-tooltip text="Keyboard users see this on focus." trigger-mode="focus" position="right"><jarvis-button variant="ghost">Focus trigger</jarvis-button></jarvis-tooltip><jarvis-tooltip text="Click again or press Escape to close." trigger-mode="click" position="bottom"><jarvis-button>Click trigger</jarvis-button></jarvis-tooltip></div>` },
-        { title: 'Arrow, width, and interactive content', markup: `<div class="grid cards"><jarvis-tooltip text="Short status tooltip." position="left"><jarvis-chip>With arrow</jarvis-chip></jarvis-tooltip><jarvis-tooltip heading="Inline guidance" trigger-mode="click" interactive max-width="24rem" position="bottom"><jarvis-button variant="outline">Interactive tooltip</jarvis-button><div slot="content" style="display:grid;gap:0.55rem;"><p style="margin:0;">Use click-triggered tooltips when the guidance needs one extra action without becoming a full popover.</p><jarvis-button variant="ghost">Review checklist</jarvis-button></div></jarvis-tooltip></div>` }
+        { title: 'Hover, focus, and click tooltips', markup: `<div class="grid cards"><eon-tooltip text="Helpful supporting text" position="top"><eon-button variant="outline">Hover trigger</eon-button></eon-tooltip><eon-tooltip text="Keyboard users see this on focus." trigger-mode="focus" position="right"><eon-button variant="ghost">Focus trigger</eon-button></eon-tooltip><eon-tooltip text="Click again or press Escape to close." trigger-mode="click" position="bottom"><eon-button>Click trigger</eon-button></eon-tooltip></div>` },
+        { title: 'Arrow, width, and interactive content', markup: `<div class="grid cards"><eon-tooltip text="Short status tooltip." position="left"><eon-chip>With arrow</eon-chip></eon-tooltip><eon-tooltip heading="Inline guidance" trigger-mode="click" interactive max-width="24rem" position="bottom"><eon-button variant="outline">Interactive tooltip</eon-button><div slot="content" style="display:grid;gap:0.55rem;"><p style="margin:0;">Use click-triggered tooltips when the guidance needs one extra action without becoming a full popover.</p><eon-button variant="ghost">Review checklist</eon-button></div></eon-tooltip></div>` }
       ];
-    case 'jarvis-button-group':
+    case 'eon-button-group':
       return [
-        { title: 'Single and multiple selection', markup: `<div class="grid cards"><jarvis-button-group label="Status" items="Normal~Default row state; Success~Positive completion state|success; Default~Balanced fallback option; Danger~Use carefully|danger" value="Default"></jarvis-button-group><jarvis-button-group label="Text alignment" items="Left~Primary reading edge; Center~Balanced layouts; Right~Edge anchored notes; Justify~Long-form paragraphs" selection-mode="multiple" value="Left,Center"></jarvis-button-group></div>` },
-        { title: 'Vertical, invalid, and readonly states', markup: `<div class="grid cards"><jarvis-button-group label="Publishing stage" items="Draft~Work in progress; Review~Needs sign-off; Publish~Goes live after approval; Archive~Hidden from public listings|archive|disabled" orientation="vertical" value="Review" help-text="Choose the next lifecycle state."></jarvis-button-group><jarvis-button-group label="Review mode" items="Primary~Default view; Secondary~Support context; Locked~Audit-only state|locked|disabled" value="Primary" read-only aria-description="Selection is locked while the audit is open."></jarvis-button-group><jarvis-button-group label="Required justification" items="Keep open~Continue work this sprint; Pause~Revisit next sprint; Close~No further action|danger" invalid error-text="Choose the resolution path before closing the issue."></jarvis-button-group></div>` }
+        { title: 'Single and multiple selection', markup: `<div class="grid cards"><eon-button-group label="Status" items="Normal~Default row state; Success~Positive completion state|success; Default~Balanced fallback option; Danger~Use carefully|danger" value="Default"></eon-button-group><eon-button-group label="Text alignment" items="Left~Primary reading edge; Center~Balanced layouts; Right~Edge anchored notes; Justify~Long-form paragraphs" selection-mode="multiple" value="Left,Center"></eon-button-group></div>` },
+        { title: 'Vertical, invalid, and readonly states', markup: `<div class="grid cards"><eon-button-group label="Publishing stage" items="Draft~Work in progress; Review~Needs sign-off; Publish~Goes live after approval; Archive~Hidden from public listings|archive|disabled" orientation="vertical" value="Review" help-text="Choose the next lifecycle state."></eon-button-group><eon-button-group label="Review mode" items="Primary~Default view; Secondary~Support context; Locked~Audit-only state|locked|disabled" value="Primary" read-only aria-description="Selection is locked while the audit is open."></eon-button-group><eon-button-group label="Required justification" items="Keep open~Continue work this sprint; Pause~Revisit next sprint; Close~No further action|danger" invalid error-text="Choose the resolution path before closing the issue."></eon-button-group></div>` }
       ];
-    case 'jarvis-menu':
+    case 'eon-menu':
       return [
-        { title: 'Catalog and nested navigation', markup: `<div style="display:grid;gap:1rem;"><jarvis-menu aria-label="Catalog menu" items="Catalog/Video players/HD Video Player~Best for compact rooms; Catalog/Video players/SuperHD Video Player~Cinematic upgrade; Catalog/Televisions/SuperLCD 42~Backordered this month|disabled; Catalog/Televisions/SuperLED 50~Flagship showroom panel; Catalog/Monitors/DesktopLCD 19~Desk-ready setup; Catalog/Projectors/Projector Plus~Boardroom optics" orientation="horizontal" trigger-mode="click" show-first-submenu-mode="hover" value="Catalog/Televisions/SuperLED 50"></jarvis-menu><jarvis-surface elevated><jarvis-stack><strong>Hover-first product browse</strong><p>Open the first submenu on hover while preserving click selection for deliberate navigation.</p></jarvis-stack></jarvis-surface></div>` },
-        { title: 'Vertical command rail', markup: `<div style="display:grid;grid-template-columns:minmax(14rem,16rem) minmax(0,1fr);gap:1rem;align-items:start;"><jarvis-menu aria-label="Workspace rail" items="Workspace/Overview~Live dashboard; Workspace/Members~32 collaborators; Workspace/Billing~Invoices and plans; Reports/Sales/Daily~Updated hourly; Reports/Sales/Weekly~Board review ready; Reports/Inventory/Reorder list~2 suppliers pending|disabled; Settings/Security~MFA enforced; Settings/Delete workspace~Requires owner approval|danger" orientation="vertical" trigger-mode="click" close-on-mouse-leave value="Reports/Sales/Weekly"></jarvis-menu><jarvis-surface elevated><jarvis-stack><strong>Command details</strong><p>Use a left rail when submenu density matters more than horizontal scanning and collapse flyouts when the user leaves the rail.</p><jarvis-button variant="outline">Review weekly sales</jarvis-button></jarvis-stack></jarvis-surface></div>` },
-        { title: 'Selection indicators and hidden descriptions', markup: `<div style="display:grid;grid-template-columns:minmax(14rem,16rem) minmax(0,1fr);gap:1rem;align-items:start;"><jarvis-menu aria-label="Compact command menu" aria-description="Persistent command menu with remembered selection." items="Content/Overview~Summary panel; Content/Drafts~3 pending reviews; Content/Archive~Read-only history|disabled; Workspace/Pin this workspace~Keep it at the top of the switcher; Workspace/Delete workspace~Requires owner approval|danger" orientation="vertical" show-descriptions="false" close-on-select="false" value="Workspace/Pin this workspace"></jarvis-menu><jarvis-surface elevated><jarvis-stack><strong>Keyboard scan</strong><p>Type the first few letters of a command to move focus across sibling rows while keeping the selected action visibly marked.</p></jarvis-stack></jarvis-surface></div>` }
+        { title: 'Catalog and nested navigation', markup: `<div style="display:grid;gap:1rem;"><eon-menu aria-label="Catalog menu" items="Catalog/Video players/HD Video Player~Best for compact rooms; Catalog/Video players/SuperHD Video Player~Cinematic upgrade; Catalog/Televisions/SuperLCD 42~Backordered this month|disabled; Catalog/Televisions/SuperLED 50~Flagship showroom panel; Catalog/Monitors/DesktopLCD 19~Desk-ready setup; Catalog/Projectors/Projector Plus~Boardroom optics" orientation="horizontal" trigger-mode="click" show-first-submenu-mode="hover" value="Catalog/Televisions/SuperLED 50"></eon-menu><eon-surface elevated><eon-stack><strong>Hover-first product browse</strong><p>Open the first submenu on hover while preserving click selection for deliberate navigation.</p></eon-stack></eon-surface></div>` },
+        { title: 'Vertical command rail', markup: `<div style="display:grid;grid-template-columns:minmax(14rem,16rem) minmax(0,1fr);gap:1rem;align-items:start;"><eon-menu aria-label="Workspace rail" items="Workspace/Overview~Live dashboard; Workspace/Members~32 collaborators; Workspace/Billing~Invoices and plans; Reports/Sales/Daily~Updated hourly; Reports/Sales/Weekly~Board review ready; Reports/Inventory/Reorder list~2 suppliers pending|disabled; Settings/Security~MFA enforced; Settings/Delete workspace~Requires owner approval|danger" orientation="vertical" trigger-mode="click" close-on-mouse-leave value="Reports/Sales/Weekly"></eon-menu><eon-surface elevated><eon-stack><strong>Command details</strong><p>Use a left rail when submenu density matters more than horizontal scanning and collapse flyouts when the user leaves the rail.</p><eon-button variant="outline">Review weekly sales</eon-button></eon-stack></eon-surface></div>` },
+        { title: 'Selection indicators and hidden descriptions', markup: `<div style="display:grid;grid-template-columns:minmax(14rem,16rem) minmax(0,1fr);gap:1rem;align-items:start;"><eon-menu aria-label="Compact command menu" aria-description="Persistent command menu with remembered selection." items="Content/Overview~Summary panel; Content/Drafts~3 pending reviews; Content/Archive~Read-only history|disabled; Workspace/Pin this workspace~Keep it at the top of the switcher; Workspace/Delete workspace~Requires owner approval|danger" orientation="vertical" show-descriptions="false" close-on-select="false" value="Workspace/Pin this workspace"></eon-menu><eon-surface elevated><eon-stack><strong>Keyboard scan</strong><p>Type the first few letters of a command to move focus across sibling rows while keeping the selected action visibly marked.</p></eon-stack></eon-surface></div>` }
       ];
-    case 'jarvis-context-menu':
+    case 'eon-context-menu':
       return [
-        { title: 'Product actions on click', markup: `<jarvis-context-menu aria-label="Product media actions" show-on="click" value="Add to favorite" items="Share/Facebook~Publish to the company page; Share/Twitter~Post the teaser copy; Download~Save the latest preview; Add comment~Open the review thread; Add to favorite~Pin to quick access; Delete asset~Cannot be undone|danger"><div style="display:grid;gap:0.8rem;justify-items:start;padding:1rem;border:1px solid rgba(120,138,164,0.22);border-radius:1rem;background:linear-gradient(180deg,#ffffff,#f8fbff);min-height:12rem;"><div style="font-size:0.8rem;text-transform:uppercase;letter-spacing:0.08em;color:#64748b;">Click the media card</div><div style="width:100%;min-height:8rem;border-radius:0.9rem;background:linear-gradient(135deg,#0f172a,#1e293b 45%,#334155);display:grid;place-items:center;color:#f8fafc;font-weight:600;">Display preview</div><div style="display:flex;justify-content:space-between;width:100%;font-size:0.95rem;color:#334155;"><span>SuperLCD 55</span><strong>$799</strong></div></div></jarvis-context-menu>` },
-        { title: 'Nested share menu with disabled actions', markup: `<jarvis-context-menu aria-label="Asset share menu" items="Share/Facebook~Publish to the company page; Share/Twitter~Post teaser copy; Share/Copy link~Copy the public review URL; Download~Save the latest preview; Archive~Move to cold storage|disabled" close-on-outside-click="false"><div style="display:grid;place-items:center;min-height:10rem;border:1px solid rgba(120,138,164,0.18);border-radius:1rem;background:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,0.72);">Use right click, long press, or Shift+F10</div></jarvis-context-menu>` },
-        { title: 'Remembered selection and compact rows', markup: `<jarvis-context-menu aria-label="Quick asset actions" show-on="click" close-on-select="false" value="Review/Approve" show-descriptions="false" items="Review/Approve~Mark this asset as approved.; Review/Request changes~Send back for revision.; Organize/Move to archive~Move out of the active queue.; Organize/Delete asset~Cannot be undone|danger"><div style="display:grid;gap:0.5rem;padding:1rem;border:1px dashed rgba(120,138,164,0.32);border-radius:1rem;background:rgba(248,250,252,0.92);"><strong>Compact context target</strong><span style="color:#64748b;">Selected actions keep a visible indicator when you reopen the menu.</span></div></jarvis-context-menu>` }
+        { title: 'Product actions on click', markup: `<eon-context-menu aria-label="Product media actions" show-on="click" value="Add to favorite" items="Share/Facebook~Publish to the company page; Share/Twitter~Post the teaser copy; Download~Save the latest preview; Add comment~Open the review thread; Add to favorite~Pin to quick access; Delete asset~Cannot be undone|danger"><div style="display:grid;gap:0.8rem;justify-items:start;padding:1rem;border:1px solid rgba(120,138,164,0.22);border-radius:1rem;background:linear-gradient(180deg,#ffffff,#f8fbff);min-height:12rem;"><div style="font-size:0.8rem;text-transform:uppercase;letter-spacing:0.08em;color:#64748b;">Click the media card</div><div style="width:100%;min-height:8rem;border-radius:0.9rem;background:linear-gradient(135deg,#0f172a,#1e293b 45%,#334155);display:grid;place-items:center;color:#f8fafc;font-weight:600;">Display preview</div><div style="display:flex;justify-content:space-between;width:100%;font-size:0.95rem;color:#334155;"><span>SuperLCD 55</span><strong>$799</strong></div></div></eon-context-menu>` },
+        { title: 'Nested share menu with disabled actions', markup: `<eon-context-menu aria-label="Asset share menu" items="Share/Facebook~Publish to the company page; Share/Twitter~Post teaser copy; Share/Copy link~Copy the public review URL; Download~Save the latest preview; Archive~Move to cold storage|disabled" close-on-outside-click="false"><div style="display:grid;place-items:center;min-height:10rem;border:1px solid rgba(120,138,164,0.18);border-radius:1rem;background:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,0.72);">Use right click, long press, or Shift+F10</div></eon-context-menu>` },
+        { title: 'Remembered selection and compact rows', markup: `<eon-context-menu aria-label="Quick asset actions" show-on="click" close-on-select="false" value="Review/Approve" show-descriptions="false" items="Review/Approve~Mark this asset as approved.; Review/Request changes~Send back for revision.; Organize/Move to archive~Move out of the active queue.; Organize/Delete asset~Cannot be undone|danger"><div style="display:grid;gap:0.5rem;padding:1rem;border:1px dashed rgba(120,138,164,0.32);border-radius:1rem;background:rgba(248,250,252,0.92);"><strong>Compact context target</strong><span style="color:#64748b;">Selected actions keep a visible indicator when you reopen the menu.</span></div></eon-context-menu>` }
       ];
-    case 'jarvis-stepper':
+    case 'eon-stepper':
       return [
-        { title: 'Horizontal and vertical progress', markup: `<div class="grid cards"><jarvis-stepper items="Cart|cart||; Shipping info|truck||; Promo code|gift|Optional|optional; Checkout|card||; Ordered|check|Confirmed|" current="2" completed="0,1" invalid-steps="3" disabled-steps="4" size="lg"></jarvis-stepper><jarvis-stepper items="Profile|user||; Workspace|grid||; Billing|card|Needs review|invalid; Review|check||" current="1" completed="Profile" orientation="vertical"></jarvis-stepper></div>` },
-        { title: 'Linear, blocked, and focus-select states', markup: `<div class="grid cards"><jarvis-stepper items="Dates|calendar||; Guests|users||; Room and meal plan|bed||; Additional requests|message|Optional|optional; Confirmation|check|Waiting for validation|disabled" current="2" linear disabled-steps="4"></jarvis-stepper><jarvis-stepper items="Cart|cart||; Shipping|truck||; Payment|card||; Review|check||" current="1" select-on-focus show-connectors="false" size="sm"></jarvis-stepper></div>` },
-        { title: 'Readonly review and explicit status control', markup: `<div class="grid cards"><jarvis-stepper items="Intake|inbox||; Review|search||; Approval|check||; Archive|folder||" current="1" completed="Intake" invalid-steps="Approval" read-only aria-label="Readonly audit flow"></jarvis-stepper><jarvis-stepper items="Draft|edit||; Review|search||; Publish|send||" current="2" completed="Draft,Review" size="sm" aria-label="Publishing review flow"></jarvis-stepper></div>` }
+        { title: 'Horizontal and vertical progress', markup: `<div class="grid cards"><eon-stepper items="Cart|cart||; Shipping info|truck||; Promo code|gift|Optional|optional; Checkout|card||; Ordered|check|Confirmed|" current="2" completed="0,1" invalid-steps="3" disabled-steps="4" size="lg"></eon-stepper><eon-stepper items="Profile|user||; Workspace|grid||; Billing|card|Needs review|invalid; Review|check||" current="1" completed="Profile" orientation="vertical"></eon-stepper></div>` },
+        { title: 'Linear, blocked, and focus-select states', markup: `<div class="grid cards"><eon-stepper items="Dates|calendar||; Guests|users||; Room and meal plan|bed||; Additional requests|message|Optional|optional; Confirmation|check|Waiting for validation|disabled" current="2" linear disabled-steps="4"></eon-stepper><eon-stepper items="Cart|cart||; Shipping|truck||; Payment|card||; Review|check||" current="1" select-on-focus show-connectors="false" size="sm"></eon-stepper></div>` },
+        { title: 'Readonly review and explicit status control', markup: `<div class="grid cards"><eon-stepper items="Intake|inbox||; Review|search||; Approval|check||; Archive|folder||" current="1" completed="Intake" invalid-steps="Approval" read-only aria-label="Readonly audit flow"></eon-stepper><eon-stepper items="Draft|edit||; Review|search||; Publish|send||" current="2" completed="Draft,Review" size="sm" aria-label="Publishing review flow"></eon-stepper></div>` }
       ];
-    case 'jarvis-autocomplete':
+    case 'eon-autocomplete':
       return [
-        { title: 'Default, clear button, and starts-with search', markup: `<div class="grid cards"><jarvis-autocomplete label="First name" suggestions="George,Margaret,Olivia,Victor,Sam,John" search-mode="startsWith"></jarvis-autocomplete><jarvis-autocomplete label="Last name" suggestions="Stanwick,Hill,Reagan,Norris,Hart" show-clear-button value="Stanwick"></jarvis-autocomplete></div>` },
-        { title: 'Disabled and filled', markup: `<div class="grid cards"><jarvis-autocomplete label="Role" suggestions="CEO,CTO,COO,Designer,Engineer" value="CEO" disabled></jarvis-autocomplete><jarvis-autocomplete label="State" suggestions="California,Georgia,Missouri,Utah,Idaho" placeholder="Type a state"></jarvis-autocomplete></div>` },
-        { title: 'Custom values, exact matching, and empty state copy', markup: `<div class="grid cards"><jarvis-autocomplete label="Client" suggestions="Acme,Northwind,Globex,Initech" accept-custom-value min-search-length="2"></jarvis-autocomplete><jarvis-autocomplete label="Search by exact code" suggestions="OPS-100,OPS-120,OPS-140,OPS-200" search-mode="equals" no-data-text="Type a full code like OPS-120" placeholder="Type an exact code"></jarvis-autocomplete></div>` }
+        { title: 'Default, clear button, and starts-with search', markup: `<div class="grid cards"><eon-autocomplete label="First name" suggestions="George,Margaret,Olivia,Victor,Sam,John" search-mode="startsWith"></eon-autocomplete><eon-autocomplete label="Last name" suggestions="Stanwick,Hill,Reagan,Norris,Hart" show-clear-button value="Stanwick"></eon-autocomplete></div>` },
+        { title: 'Disabled and filled', markup: `<div class="grid cards"><eon-autocomplete label="Role" suggestions="CEO,CTO,COO,Designer,Engineer" value="CEO" disabled></eon-autocomplete><eon-autocomplete label="State" suggestions="California,Georgia,Missouri,Utah,Idaho" placeholder="Type a state"></eon-autocomplete></div>` },
+        { title: 'Custom values, exact matching, and empty state copy', markup: `<div class="grid cards"><eon-autocomplete label="Client" suggestions="Acme,Northwind,Globex,Initech" accept-custom-value min-search-length="2"></eon-autocomplete><eon-autocomplete label="Search by exact code" suggestions="OPS-100,OPS-120,OPS-140,OPS-200" search-mode="equals" no-data-text="Type a full code like OPS-120" placeholder="Type an exact code"></eon-autocomplete></div>` }
       ];
-    case 'jarvis-combobox':
+    case 'eon-combobox':
       return [
-        { title: 'Default, grouped options, and clear button', markup: `<div class="grid cards"><jarvis-combobox label="Owner" placeholder="Select an owner" options="Leadership/John Heart; Leadership/Samantha Bright; Engineering/Kevin Carter; Engineering/Victor Norris" value="Engineering/Kevin Carter" show-clear-button></jarvis-combobox><jarvis-combobox label="Client" placeholder="Start typing a client" options="Acme North|acme-north; Acme South|acme-south; Globex Prime|globex-prime; Initech Labs|initech-labs" search-mode="startsWith"></jarvis-combobox></div>` },
-        { title: 'Exact search, custom values, and no-data guidance', markup: `<div class="grid cards"><jarvis-combobox label="Team code" placeholder="Type a full code" options="OPS-100|ops-100; OPS-120|ops-120; OPS-140|ops-140" search-mode="equals" no-data-text="Type a full code like OPS-120"></jarvis-combobox><jarvis-combobox label="Create a new tag" placeholder="Select or type a tag" options="Design|design; Engineering|engineering; Product|product" accept-custom-value show-clear-button></jarvis-combobox></div>` },
-        { title: 'Readonly, invalid, and delayed search', markup: `<div class="grid cards"><jarvis-combobox label="Readonly owner" options="Leadership/John Heart; Leadership/Samantha Bright; Engineering/Kevin Carter; Engineering/Victor Norris" value="Leadership/Samantha Bright" read-only></jarvis-combobox><jarvis-combobox label="Search after 2 letters" placeholder="Type at least 2 letters" options="California|ca; Colorado|co; Connecticut|ct; Georgia|ga; Idaho|id" min-search-length="2" show-data-before-search="false" invalid error-text="Choose a valid state."></jarvis-combobox></div>` }
+        { title: 'Default, grouped options, and clear button', markup: `<div class="grid cards"><eon-combobox label="Owner" placeholder="Select an owner" options="Leadership/John Heart; Leadership/Samantha Bright; Engineering/Kevin Carter; Engineering/Victor Norris" value="Engineering/Kevin Carter" show-clear-button></eon-combobox><eon-combobox label="Client" placeholder="Start typing a client" options="Acme North|acme-north; Acme South|acme-south; Globex Prime|globex-prime; Initech Labs|initech-labs" search-mode="startsWith"></eon-combobox></div>` },
+        { title: 'Exact search, custom values, and no-data guidance', markup: `<div class="grid cards"><eon-combobox label="Team code" placeholder="Type a full code" options="OPS-100|ops-100; OPS-120|ops-120; OPS-140|ops-140" search-mode="equals" no-data-text="Type a full code like OPS-120"></eon-combobox><eon-combobox label="Create a new tag" placeholder="Select or type a tag" options="Design|design; Engineering|engineering; Product|product" accept-custom-value show-clear-button></eon-combobox></div>` },
+        { title: 'Readonly, invalid, and delayed search', markup: `<div class="grid cards"><eon-combobox label="Readonly owner" options="Leadership/John Heart; Leadership/Samantha Bright; Engineering/Kevin Carter; Engineering/Victor Norris" value="Leadership/Samantha Bright" read-only></eon-combobox><eon-combobox label="Search after 2 letters" placeholder="Type at least 2 letters" options="California|ca; Colorado|co; Connecticut|ct; Georgia|ga; Idaho|id" min-search-length="2" show-data-before-search="false" invalid error-text="Choose a valid state."></eon-combobox></div>` }
       ];
-    case 'jarvis-radio-group':
+    case 'eon-radio-group':
       return [
-        { title: 'Vertical and horizontal', markup: `<div class="grid cards"><jarvis-radio-group label="Priority" items="Low~Default response window; Normal~Routes to the shared queue; Urgent~Escalates to the incident rotation; High~Board-level attention required|high|danger" value="Urgent"></jarvis-radio-group><jarvis-radio-group label="Direction" items="Auto~Use default layout rule; Left~Anchor support rail; Right~Anchor analytics rail" value="Left" orientation="horizontal"></jarvis-radio-group></div>` },
-        { title: 'Required, invalid, and readonly groups', markup: `<div class="grid cards"><jarvis-radio-group label="Required shipping method" items="Standard~3 to 5 business days; Express~Next business day; Same day~Local coverage only|same-day|disabled" required help-text="Choose how the order should ship."></jarvis-radio-group><jarvis-radio-group label="Invalid selection guidance" items="Design~Owns the visual system; Engineering~Ships the underlying implementation; Product~Sets the delivery brief" invalid error-text="Pick the team that owns this request."></jarvis-radio-group><jarvis-radio-group label="Readonly review state" items="Draft~Changes still allowed; Review~Pending audit approval; Approved~Locked for release" value="Review" read-only aria-description="This workflow state is locked during audit."></jarvis-radio-group></div>` }
+        { title: 'Vertical and horizontal', markup: `<div class="grid cards"><eon-radio-group label="Priority" items="Low~Default response window; Normal~Routes to the shared queue; Urgent~Escalates to the incident rotation; High~Board-level attention required|high|danger" value="Urgent"></eon-radio-group><eon-radio-group label="Direction" items="Auto~Use default layout rule; Left~Anchor support rail; Right~Anchor analytics rail" value="Left" orientation="horizontal"></eon-radio-group></div>` },
+        { title: 'Required, invalid, and readonly groups', markup: `<div class="grid cards"><eon-radio-group label="Required shipping method" items="Standard~3 to 5 business days; Express~Next business day; Same day~Local coverage only|same-day|disabled" required help-text="Choose how the order should ship."></eon-radio-group><eon-radio-group label="Invalid selection guidance" items="Design~Owns the visual system; Engineering~Ships the underlying implementation; Product~Sets the delivery brief" invalid error-text="Pick the team that owns this request."></eon-radio-group><eon-radio-group label="Readonly review state" items="Draft~Changes still allowed; Review~Pending audit approval; Approved~Locked for release" value="Review" read-only aria-description="This workflow state is locked during audit."></eon-radio-group></div>` }
       ];
-    case 'jarvis-select-box':
+    case 'eon-select-box':
       return [
-        { title: 'Default, grouped, and readonly', markup: `<div class="grid cards"><jarvis-select-box label="Product" items="HD Video Player|hd; SuperHD Video Player|super-hd; SuperLCD 42|lcd-42; SuperLED 50|led-50" value="hd" show-clear-button></jarvis-select-box><jarvis-select-box label="Grouped data" items="Video Players/HD Video Player; Video Players/SuperHD Video Player; Televisions/SuperLCD 42; Televisions/SuperLED 50" grouped search-enabled></jarvis-select-box><jarvis-select-box label="Read only" items="Low|low; Normal|normal; Urgent|urgent" value="urgent" read-only></jarvis-select-box></div>` },
-        { title: 'Search, custom value, and disabled state', markup: `<div class="grid cards"><jarvis-select-box label="Search products" items="HD Video Player|hd; SuperHD Video Player|super-hd; SuperLCD 42|lcd-42; SuperLED 50|led-50" search-enabled accept-custom-value placeholder="Choose or type a product"></jarvis-select-box><jarvis-select-box label="Disabled catalog" items="Projector Plus|projector; Projector PlusHD|projector-hd; Wireless Display|wireless" value="projector-hd" disabled></jarvis-select-box></div>` },
-        { title: 'Exact search and custom no-data text', markup: `<div class="grid cards"><jarvis-select-box label="Exact SKU match" items="OPS-100|ops-100; OPS-120|ops-120; OPS-140|ops-140" search-enabled search-mode="equals" no-data-text="No SKU matched. Try OPS-120." placeholder="Type a full SKU"></jarvis-select-box><jarvis-select-box label="Starts-with search" items="Acme North|acme-north; Acme South|acme-south; Globex Prime|globex-prime" search-enabled search-mode="startsWith" placeholder="Start typing a client"></jarvis-select-box></div>` },
-        { title: 'Required, helper, and validation states', markup: `<div class="grid cards"><jarvis-select-box label="Required category" items="Finance|finance; Operations|operations; Product|product; Support|support" required help-text="Pick a team before routing the request."></jarvis-select-box><jarvis-select-box label="Invalid category" items="Finance|finance; Operations|operations; Product|product; Support|support" invalid error-text="Select a valid team before continuing."></jarvis-select-box><jarvis-select-box label="Readonly selection" items="Low|low; Normal|normal; Urgent|urgent" value="urgent" read-only help-text="This routing level is locked after approval."></jarvis-select-box></div>` },
-        { title: 'Routing and approval ownership', markup: `<div class="grid cards"><jarvis-surface><jarvis-stack gap="1rem"><strong>Assign release ownership</strong><jarvis-select-box label="Owning team" items="Design|design; Engineering|engineering; Product|product; Support|support" value="engineering" help-text="The selected team becomes the default approver group."></jarvis-select-box><jarvis-select-box label="Escalation path" items="Standard review|standard; Legal review|legal; Executive sign-off|executive" required invalid error-text="Choose the approval route before continuing."></jarvis-select-box><jarvis-button>Open approval review</jarvis-button></jarvis-stack></jarvis-surface></div>` }
+        { title: 'Default, grouped, and readonly', markup: `<div class="grid cards"><eon-select-box label="Product" items="HD Video Player|hd; SuperHD Video Player|super-hd; SuperLCD 42|lcd-42; SuperLED 50|led-50" value="hd" show-clear-button></eon-select-box><eon-select-box label="Grouped data" items="Video Players/HD Video Player; Video Players/SuperHD Video Player; Televisions/SuperLCD 42; Televisions/SuperLED 50" grouped search-enabled></eon-select-box><eon-select-box label="Read only" items="Low|low; Normal|normal; Urgent|urgent" value="urgent" read-only></eon-select-box></div>` },
+        { title: 'Search, custom value, and disabled state', markup: `<div class="grid cards"><eon-select-box label="Search products" items="HD Video Player|hd; SuperHD Video Player|super-hd; SuperLCD 42|lcd-42; SuperLED 50|led-50" search-enabled accept-custom-value placeholder="Choose or type a product"></eon-select-box><eon-select-box label="Disabled catalog" items="Projector Plus|projector; Projector PlusHD|projector-hd; Wireless Display|wireless" value="projector-hd" disabled></eon-select-box></div>` },
+        { title: 'Exact search and custom no-data text', markup: `<div class="grid cards"><eon-select-box label="Exact SKU match" items="OPS-100|ops-100; OPS-120|ops-120; OPS-140|ops-140" search-enabled search-mode="equals" no-data-text="No SKU matched. Try OPS-120." placeholder="Type a full SKU"></eon-select-box><eon-select-box label="Starts-with search" items="Acme North|acme-north; Acme South|acme-south; Globex Prime|globex-prime" search-enabled search-mode="startsWith" placeholder="Start typing a client"></eon-select-box></div>` },
+        { title: 'Required, helper, and validation states', markup: `<div class="grid cards"><eon-select-box label="Required category" items="Finance|finance; Operations|operations; Product|product; Support|support" required help-text="Pick a team before routing the request."></eon-select-box><eon-select-box label="Invalid category" items="Finance|finance; Operations|operations; Product|product; Support|support" invalid error-text="Select a valid team before continuing."></eon-select-box><eon-select-box label="Readonly selection" items="Low|low; Normal|normal; Urgent|urgent" value="urgent" read-only help-text="This routing level is locked after approval."></eon-select-box></div>` },
+        { title: 'Routing and approval ownership', markup: `<div class="grid cards"><eon-surface><eon-stack gap="1rem"><strong>Assign release ownership</strong><eon-select-box label="Owning team" items="Design|design; Engineering|engineering; Product|product; Support|support" value="engineering" help-text="The selected team becomes the default approver group."></eon-select-box><eon-select-box label="Escalation path" items="Standard review|standard; Legal review|legal; Executive sign-off|executive" required invalid error-text="Choose the approval route before continuing."></eon-select-box><eon-button>Open approval review</eon-button></eon-stack></eon-surface></div>` }
       ];
-    case 'jarvis-lookup':
+    case 'eon-lookup':
       return [
-        { title: 'Simple and grouped lookup', markup: `<div class="grid cards"><jarvis-lookup label="Simple lookup" heading="Select employee" items="John Heart|john; Samantha Bright|samantha; Kevin Carter|kevin" value="john" help-text="Use the sheet when you need more deliberate selection."></jarvis-lookup><jarvis-lookup label="Grouped lookup" heading="Select owner" items="Leadership/John Heart; Leadership/Samantha Bright; Engineering/Kevin Carter; Engineering/Victor Norris" grouped value="Engineering/Victor Norris"></jarvis-lookup></div>` },
-        { title: 'Clear button, search-first flow, and empty state copy', markup: `<div class="grid cards"><jarvis-lookup label="Assignee" heading="Pick an owner" items="Leadership/John Heart; Leadership/Samantha Bright; Engineering/Kevin Carter; Engineering/Victor Norris" grouped show-clear-button search-placeholder="Search employees" value="Leadership/Samantha Bright"></jarvis-lookup><jarvis-lookup label="Empty search guidance" heading="Search department code" items="FIN-100|fin-100; OPS-200|ops-200; HR-300|hr-300" search-mode="equals" no-data-text="Enter a full code like OPS-200" show-cancel-button="false"></jarvis-lookup></div>` },
-        { title: 'Required, readonly, and invalid states', markup: `<div class="grid cards"><jarvis-lookup label="Required owner" heading="Choose an owner" items="Leadership/John Heart; Leadership/Samantha Bright; Engineering/Kevin Carter" required invalid error-text="Pick an owner before submitting."></jarvis-lookup><jarvis-lookup label="Readonly owner" heading="Owner details" items="Leadership/John Heart; Leadership/Samantha Bright; Engineering/Kevin Carter" value="Leadership/Samantha Bright" read-only help-text="This owner is locked after approval."></jarvis-lookup></div>` }
+        { title: 'Simple and grouped lookup', markup: `<div class="grid cards"><eon-lookup label="Simple lookup" heading="Select employee" items="John Heart|john; Samantha Bright|samantha; Kevin Carter|kevin" value="john" help-text="Use the sheet when you need more deliberate selection."></eon-lookup><eon-lookup label="Grouped lookup" heading="Select owner" items="Leadership/John Heart; Leadership/Samantha Bright; Engineering/Kevin Carter; Engineering/Victor Norris" grouped value="Engineering/Victor Norris"></eon-lookup></div>` },
+        { title: 'Clear button, search-first flow, and empty state copy', markup: `<div class="grid cards"><eon-lookup label="Assignee" heading="Pick an owner" items="Leadership/John Heart; Leadership/Samantha Bright; Engineering/Kevin Carter; Engineering/Victor Norris" grouped show-clear-button search-placeholder="Search employees" value="Leadership/Samantha Bright"></eon-lookup><eon-lookup label="Empty search guidance" heading="Search department code" items="FIN-100|fin-100; OPS-200|ops-200; HR-300|hr-300" search-mode="equals" no-data-text="Enter a full code like OPS-200" show-cancel-button="false"></eon-lookup></div>` },
+        { title: 'Required, readonly, and invalid states', markup: `<div class="grid cards"><eon-lookup label="Required owner" heading="Choose an owner" items="Leadership/John Heart; Leadership/Samantha Bright; Engineering/Kevin Carter" required invalid error-text="Pick an owner before submitting."></eon-lookup><eon-lookup label="Readonly owner" heading="Owner details" items="Leadership/John Heart; Leadership/Samantha Bright; Engineering/Kevin Carter" value="Leadership/Samantha Bright" read-only help-text="This owner is locked after approval."></eon-lookup></div>` }
       ];
-    case 'jarvis-drop-down-box':
+    case 'eon-drop-down-box':
       return [
-        { title: 'Embedded tree and list', markup: `<div class="grid cards"><jarvis-drop-down-box label="Store tree" items="Stores/Super Mart of the West/Televisions/SuperLCD 42; Stores/Super Mart of the West/Televisions/SuperLED 50; Stores/Braeburn/Projectors/Projector Plus" value="Stores/Super Mart of the West/Televisions/SuperLCD 42" help-text="Tree mode works well for nested catalogs and directories."></jarvis-drop-down-box><jarvis-drop-down-box label="Products list" items="HD Video Player|hd; SuperHD Video Player|super-hd; SuperLCD 42|lcd-42; SuperLED 50|led-50" content-type="list" selection-mode="multiple" value="hd,lcd-42" show-clear-button></jarvis-drop-down-box></div>` },
-        { title: 'Search, selection controls, and staged apply', markup: `<div class="grid cards"><jarvis-drop-down-box label="Embedded explorer" items="Automation/ExcelRemote IR; Automation/ExcelRemote IP; Monitors/DesktopLCD 21; Monitors/DesktopLED 19; Projectors/Projector Plus" content-type="list" selection-mode="multiple" search-enabled show-selection-controls apply-value-mode="useButtons" value="Automation/ExcelRemote IR,Monitors/DesktopLCD 21"></jarvis-drop-down-box><jarvis-drop-down-box label="Create a custom option" items="Starter|starter; Growth|growth; Scale|scale" content-type="list" search-enabled accept-custom-value placeholder="Select or create a tier"></jarvis-drop-down-box></div>` },
-        { title: 'Tree search visibility and invalid guidance', markup: `<div class="grid cards"><jarvis-drop-down-box label="Search a tree path" items="Stores/Super Mart of the West/Televisions/SuperLCD 42; Stores/Super Mart of the West/Televisions/SuperLED 50; Stores/Braeburn/Projectors/Projector Plus; Stores/Braeburn/Projectors/Projector Pro" search-enabled search-mode="startsWith" placeholder="Search by store or product"></jarvis-drop-down-box><jarvis-drop-down-box label="Exact list search" items="OPS-100|ops-100; OPS-120|ops-120; OPS-140|ops-140" content-type="list" search-enabled search-mode="equals" no-data-text="No matching SKU. Try OPS-120." placeholder="Type an exact SKU" required invalid error-text="Choose a valid SKU before continuing."></jarvis-drop-down-box></div>` },
-        { title: 'Readonly and helper states', markup: `<div class="grid cards"><jarvis-drop-down-box label="Readonly selections" items="Leadership/John Heart; Leadership/Samantha Bright; Engineering/Kevin Carter" value="Leadership/Samantha Bright" read-only help-text="Selections are locked after handoff."></jarvis-drop-down-box><jarvis-drop-down-box label="Required multi-select" items="Finance|finance; Operations|operations; Product|product; Support|support" content-type="list" selection-mode="multiple" apply-value-mode="useButtons" required help-text="Pick one or more teams, then apply."></jarvis-drop-down-box></div>` }
+        { title: 'Embedded tree and list', markup: `<div class="grid cards"><eon-drop-down-box label="Store tree" items="Stores/Super Mart of the West/Televisions/SuperLCD 42; Stores/Super Mart of the West/Televisions/SuperLED 50; Stores/Braeburn/Projectors/Projector Plus" value="Stores/Super Mart of the West/Televisions/SuperLCD 42" help-text="Tree mode works well for nested catalogs and directories."></eon-drop-down-box><eon-drop-down-box label="Products list" items="HD Video Player|hd; SuperHD Video Player|super-hd; SuperLCD 42|lcd-42; SuperLED 50|led-50" content-type="list" selection-mode="multiple" value="hd,lcd-42" show-clear-button></eon-drop-down-box></div>` },
+        { title: 'Search, selection controls, and staged apply', markup: `<div class="grid cards"><eon-drop-down-box label="Embedded explorer" items="Automation/ExcelRemote IR; Automation/ExcelRemote IP; Monitors/DesktopLCD 21; Monitors/DesktopLED 19; Projectors/Projector Plus" content-type="list" selection-mode="multiple" search-enabled show-selection-controls apply-value-mode="useButtons" value="Automation/ExcelRemote IR,Monitors/DesktopLCD 21"></eon-drop-down-box><eon-drop-down-box label="Create a custom option" items="Starter|starter; Growth|growth; Scale|scale" content-type="list" search-enabled accept-custom-value placeholder="Select or create a tier"></eon-drop-down-box></div>` },
+        { title: 'Tree search visibility and invalid guidance', markup: `<div class="grid cards"><eon-drop-down-box label="Search a tree path" items="Stores/Super Mart of the West/Televisions/SuperLCD 42; Stores/Super Mart of the West/Televisions/SuperLED 50; Stores/Braeburn/Projectors/Projector Plus; Stores/Braeburn/Projectors/Projector Pro" search-enabled search-mode="startsWith" placeholder="Search by store or product"></eon-drop-down-box><eon-drop-down-box label="Exact list search" items="OPS-100|ops-100; OPS-120|ops-120; OPS-140|ops-140" content-type="list" search-enabled search-mode="equals" no-data-text="No matching SKU. Try OPS-120." placeholder="Type an exact SKU" required invalid error-text="Choose a valid SKU before continuing."></eon-drop-down-box></div>` },
+        { title: 'Readonly and helper states', markup: `<div class="grid cards"><eon-drop-down-box label="Readonly selections" items="Leadership/John Heart; Leadership/Samantha Bright; Engineering/Kevin Carter" value="Leadership/Samantha Bright" read-only help-text="Selections are locked after handoff."></eon-drop-down-box><eon-drop-down-box label="Required multi-select" items="Finance|finance; Operations|operations; Product|product; Support|support" content-type="list" selection-mode="multiple" apply-value-mode="useButtons" required help-text="Pick one or more teams, then apply."></eon-drop-down-box></div>` }
       ];
-    case 'jarvis-drop-down-button':
+    case 'eon-drop-down-button':
       return [
-        { title: 'Standalone button and profile actions', markup: `<div class="grid cards"><jarvis-drop-down-button label="Download trial" icon="save" items="Download trial||success|Export the latest evaluation build.; Share preview||default|Send the link to reviewers.; Archive draft||warning|Move the current draft out of the active queue.; Delete workspace||danger|Permanently remove the current draft."></jarvis-drop-down-button><jarvis-drop-down-button label="Olivia Peyton" icon="user" variant="ghost" items="Profile||default|Open profile and workspace history.; Messages||default|Review unread threads.; Friends||default|See collaborator access.; Exit||warning|End the shared preview session."></jarvis-drop-down-button></div>` },
-        { title: 'Split button and remembered primary action', markup: `<div class="grid cards"><jarvis-drop-down-button label="Publish" icon="send" split-button value="Schedule send" items="Run checks||success|Validate the release checklist.; Schedule send||default|Choose the publication window.; Merge now||default|Publish immediately.; Delete release||danger|Remove the pending release.; Locked action||default|Requires elevated approval.|disabled"></jarvis-drop-down-button><jarvis-drop-down-button label="Compact actions" variant="outline" show-descriptions="false" show-arrow-icon="false" show-selection-indicator value="Archive draft" items="Share preview||default|Send the link to reviewers.; Archive draft||warning|Move the current draft out of the active queue.; Delete workspace||danger|Permanently remove the current draft."></jarvis-drop-down-button></div>` }
+        { title: 'Standalone button and profile actions', markup: `<div class="grid cards"><eon-drop-down-button label="Download trial" icon="save" items="Download trial||success|Export the latest evaluation build.; Share preview||default|Send the link to reviewers.; Archive draft||warning|Move the current draft out of the active queue.; Delete workspace||danger|Permanently remove the current draft."></eon-drop-down-button><eon-drop-down-button label="Olivia Peyton" icon="user" variant="ghost" items="Profile||default|Open profile and workspace history.; Messages||default|Review unread threads.; Friends||default|See collaborator access.; Exit||warning|End the shared preview session."></eon-drop-down-button></div>` },
+        { title: 'Split button and remembered primary action', markup: `<div class="grid cards"><eon-drop-down-button label="Publish" icon="send" split-button value="Schedule send" items="Run checks||success|Validate the release checklist.; Schedule send||default|Choose the publication window.; Merge now||default|Publish immediately.; Delete release||danger|Remove the pending release.; Locked action||default|Requires elevated approval.|disabled"></eon-drop-down-button><eon-drop-down-button label="Compact actions" variant="outline" show-descriptions="false" show-arrow-icon="false" show-selection-indicator value="Archive draft" items="Share preview||default|Send the link to reviewers.; Archive draft||warning|Move the current draft out of the active queue.; Delete workspace||danger|Permanently remove the current draft."></eon-drop-down-button></div>` }
       ];
-    case 'jarvis-tag-box':
+    case 'eon-tag-box':
       return [
-        { title: 'Default, grouped, and limited tags', markup: `<div class="grid cards"><jarvis-tag-box label="Products" items="HD Video Player|hd; SuperHD Video Player|super-hd; SuperLCD 42|lcd-42; SuperLED 50|led-50; Projector Plus|projector" value="hd,super-hd,lcd-42" help-text="Use tags when people need to see all selected values at a glance."></jarvis-tag-box><jarvis-tag-box label="Grouped items" items="Automation/ExcelRemote IR; Automation/ExcelRemote IP; Monitors/DesktopLCD 21; Monitors/DesktopLED 19" grouped search-enabled value="Automation/ExcelRemote IR,Automation/ExcelRemote IP"></jarvis-tag-box><jarvis-tag-box label="Multi-tag" items="One|one; Two|two; Three|three; Four|four; Five|five" value="one,two,three,four" max-displayed-tags="2"></jarvis-tag-box></div>` },
-        { title: 'Select all, hide selected items, and apply buttons', markup: `<div class="grid cards"><jarvis-tag-box label="Product filters" items="HD Video Player|hd; SuperHD Video Player|super-hd; SuperLCD 42|lcd-42; SuperLED 50|led-50; Projector Plus|projector" search-enabled show-selection-controls hide-selected-items apply-value-mode="useButtons" select-all-text="Select visible products" value="hd,lcd-42"></jarvis-tag-box><jarvis-tag-box label="Custom tags" items="Design|design; Engineering|engineering; Product|product" search-enabled accept-custom-value show-multi-tag-only value="design,engineering"></jarvis-tag-box></div>` },
-        { title: 'Single collapsed tag and exact search guidance', markup: `<div class="grid cards"><jarvis-tag-box label="Single collapsed tag" items="Design|design; Engineering|engineering; Product|product" show-multi-tag-only value="design"></jarvis-tag-box><jarvis-tag-box label="Exact team search" items="OPS-100|ops-100; OPS-120|ops-120; OPS-140|ops-140" search-enabled search-mode="equals" no-data-text="Type a full team code like OPS-120" placeholder="Search exact team code" invalid error-text="Add at least one valid team code."></jarvis-tag-box></div>` },
-        { title: 'Required and readonly states', markup: `<div class="grid cards"><jarvis-tag-box label="Required reviewers" items="Design|design; Engineering|engineering; Product|product; Support|support" search-enabled required help-text="Choose one or more reviewers before continuing."></jarvis-tag-box><jarvis-tag-box label="Readonly tags" items="Design|design; Engineering|engineering; Product|product" value="design,engineering" read-only help-text="Selections are frozen after approval."></jarvis-tag-box></div>` }
+        { title: 'Default, grouped, and limited tags', markup: `<div class="grid cards"><eon-tag-box label="Products" items="HD Video Player|hd; SuperHD Video Player|super-hd; SuperLCD 42|lcd-42; SuperLED 50|led-50; Projector Plus|projector" value="hd,super-hd,lcd-42" help-text="Use tags when people need to see all selected values at a glance."></eon-tag-box><eon-tag-box label="Grouped items" items="Automation/ExcelRemote IR; Automation/ExcelRemote IP; Monitors/DesktopLCD 21; Monitors/DesktopLED 19" grouped search-enabled value="Automation/ExcelRemote IR,Automation/ExcelRemote IP"></eon-tag-box><eon-tag-box label="Multi-tag" items="One|one; Two|two; Three|three; Four|four; Five|five" value="one,two,three,four" max-displayed-tags="2"></eon-tag-box></div>` },
+        { title: 'Select all, hide selected items, and apply buttons', markup: `<div class="grid cards"><eon-tag-box label="Product filters" items="HD Video Player|hd; SuperHD Video Player|super-hd; SuperLCD 42|lcd-42; SuperLED 50|led-50; Projector Plus|projector" search-enabled show-selection-controls hide-selected-items apply-value-mode="useButtons" select-all-text="Select visible products" value="hd,lcd-42"></eon-tag-box><eon-tag-box label="Custom tags" items="Design|design; Engineering|engineering; Product|product" search-enabled accept-custom-value show-multi-tag-only value="design,engineering"></eon-tag-box></div>` },
+        { title: 'Single collapsed tag and exact search guidance', markup: `<div class="grid cards"><eon-tag-box label="Single collapsed tag" items="Design|design; Engineering|engineering; Product|product" show-multi-tag-only value="design"></eon-tag-box><eon-tag-box label="Exact team search" items="OPS-100|ops-100; OPS-120|ops-120; OPS-140|ops-140" search-enabled search-mode="equals" no-data-text="Type a full team code like OPS-120" placeholder="Search exact team code" invalid error-text="Add at least one valid team code."></eon-tag-box></div>` },
+        { title: 'Required and readonly states', markup: `<div class="grid cards"><eon-tag-box label="Required reviewers" items="Design|design; Engineering|engineering; Product|product; Support|support" search-enabled required help-text="Choose one or more reviewers before continuing."></eon-tag-box><eon-tag-box label="Readonly tags" items="Design|design; Engineering|engineering; Product|product" value="design,engineering" read-only help-text="Selections are frozen after approval."></eon-tag-box></div>` }
       ];
-    case 'jarvis-number-box':
+    case 'eon-number-box':
       return [
-        { title: 'Spin, clear, and bounds', markup: `<div class="grid cards"><jarvis-number-box label="Quantity" value="20" show-clear-button help-text="Use whole numbers."></jarvis-number-box><jarvis-number-box label="Stock" value="15" min="10" max="30" step="5"></jarvis-number-box><jarvis-number-box label="Disabled" value="10" disabled></jarvis-number-box></div>` },
-        { title: 'Formatting modes', markup: `<div class="grid cards"><jarvis-number-box label="Currency" value="14500.55" format="currency" currency="USD" fraction-digits="2"></jarvis-number-box><jarvis-number-box label="Accounting" value="-2314.12" format="accounting" currency="USD" fraction-digits="2"></jarvis-number-box><jarvis-number-box label="Percent" value="15" format="percent" fraction-digits="0"></jarvis-number-box><jarvis-number-box label="Weight" value="3.14" format="unit" unit="kg" fraction-digits="2"></jarvis-number-box></div>` },
-        { title: 'Readonly and invalid states', markup: `<div class="grid cards"><jarvis-number-box label="Readonly amount" value="42" read-only></jarvis-number-box><jarvis-number-box label="Invalid amount" value="" invalid error-text="A quantity is required." show-clear-button></jarvis-number-box></div>` }
+        { title: 'Spin, clear, and bounds', markup: `<div class="grid cards"><eon-number-box label="Quantity" value="20" show-clear-button help-text="Use whole numbers."></eon-number-box><eon-number-box label="Stock" value="15" min="10" max="30" step="5"></eon-number-box><eon-number-box label="Disabled" value="10" disabled></eon-number-box></div>` },
+        { title: 'Formatting modes', markup: `<div class="grid cards"><eon-number-box label="Currency" value="14500.55" format="currency" currency="USD" fraction-digits="2"></eon-number-box><eon-number-box label="Accounting" value="-2314.12" format="accounting" currency="USD" fraction-digits="2"></eon-number-box><eon-number-box label="Percent" value="15" format="percent" fraction-digits="0"></eon-number-box><eon-number-box label="Weight" value="3.14" format="unit" unit="kg" fraction-digits="2"></eon-number-box></div>` },
+        { title: 'Readonly and invalid states', markup: `<div class="grid cards"><eon-number-box label="Readonly amount" value="42" read-only></eon-number-box><eon-number-box label="Invalid amount" value="" invalid error-text="A quantity is required." show-clear-button></eon-number-box></div>` }
       ];
-    case 'jarvis-slider':
+    case 'eon-slider':
       return [
-        { title: 'Labels, tooltip, and disabled state', markup: `<div class="grid cards"><jarvis-slider label="Default mode" value="90"></jarvis-slider><jarvis-slider label="With labels" value="50" min="0" max="100" value-suffix="%" show-labels></jarvis-slider><jarvis-slider label="With tooltip" value="35" value-prefix="$" value-suffix="k" show-tooltip></jarvis-slider><jarvis-slider label="Disabled" value="20" disabled></jarvis-slider></div>` },
-        { title: 'Formatting and discrete tick marks', markup: `<div class="grid cards"><jarvis-slider label="Revenue target" value="14500" min="0" max="30000" step="2500" format="currency" currency="USD" tick-interval="5000" show-ticks show-tick-labels show-tooltip></jarvis-slider><jarvis-slider label="Completion" value="75" min="0" max="100" step="5" format="percent" fraction-digits="0" show-labels show-ticks tick-interval="25"></jarvis-slider><jarvis-slider label="Weight" value="12.5" min="0" max="20" step="2.5" format="unit" unit="kg" fraction-digits="1" show-tooltip show-ticks tick-interval="5"></jarvis-slider></div>` },
-        { title: 'Filled and plain track', markup: `<div class="grid cards"><jarvis-slider label="Filled track" value="72" value-suffix="%" show-tooltip show-ticks tick-interval="20"></jarvis-slider><jarvis-slider label="Plain track" value="48" value-suffix="%" show-tooltip show-range-fill="false" show-ticks tick-interval="20"></jarvis-slider></div>` },
-        { title: 'Readonly, helper, and error states', markup: `<div class="grid cards"><jarvis-slider label="Approval threshold" value="62" value-suffix="%" read-only help-text="Readonly fields still surface the current value for review."></jarvis-slider><jarvis-slider label="Risk tolerance" value="18" max="100" value-suffix="%" invalid error-text="Choose a value between 25% and 75%."></jarvis-slider><jarvis-slider label="Required target" value="40" required help-text="Use helper text for context before validation is triggered." show-labels></jarvis-slider></div>` }
+        { title: 'Labels, tooltip, and disabled state', markup: `<div class="grid cards"><eon-slider label="Default mode" value="90"></eon-slider><eon-slider label="With labels" value="50" min="0" max="100" value-suffix="%" show-labels></eon-slider><eon-slider label="With tooltip" value="35" value-prefix="$" value-suffix="k" show-tooltip></eon-slider><eon-slider label="Disabled" value="20" disabled></eon-slider></div>` },
+        { title: 'Formatting and discrete tick marks', markup: `<div class="grid cards"><eon-slider label="Revenue target" value="14500" min="0" max="30000" step="2500" format="currency" currency="USD" tick-interval="5000" show-ticks show-tick-labels show-tooltip></eon-slider><eon-slider label="Completion" value="75" min="0" max="100" step="5" format="percent" fraction-digits="0" show-labels show-ticks tick-interval="25"></eon-slider><eon-slider label="Weight" value="12.5" min="0" max="20" step="2.5" format="unit" unit="kg" fraction-digits="1" show-tooltip show-ticks tick-interval="5"></eon-slider></div>` },
+        { title: 'Filled and plain track', markup: `<div class="grid cards"><eon-slider label="Filled track" value="72" value-suffix="%" show-tooltip show-ticks tick-interval="20"></eon-slider><eon-slider label="Plain track" value="48" value-suffix="%" show-tooltip show-range-fill="false" show-ticks tick-interval="20"></eon-slider></div>` },
+        { title: 'Readonly, helper, and error states', markup: `<div class="grid cards"><eon-slider label="Approval threshold" value="62" value-suffix="%" read-only help-text="Readonly fields still surface the current value for review."></eon-slider><eon-slider label="Risk tolerance" value="18" max="100" value-suffix="%" invalid error-text="Choose a value between 25% and 75%."></eon-slider><eon-slider label="Required target" value="40" required help-text="Use helper text for context before validation is triggered." show-labels></eon-slider></div>` }
       ];
-    case 'jarvis-range-slider':
+    case 'eon-range-slider':
       return [
-        { title: 'Range configurations', markup: `<div class="grid cards"><jarvis-range-slider label="Default mode" start="20" end="60"></jarvis-range-slider><jarvis-range-slider label="With labels" start="35" end="65" value-prefix="$" value-suffix="k" show-labels></jarvis-range-slider><jarvis-range-slider label="With tooltips" start="15" end="65" value-prefix="$" value-suffix="k" show-tooltips></jarvis-range-slider><jarvis-range-slider label="Disabled" start="25" end="75" disabled></jarvis-range-slider></div>` },
-        { title: 'Formatted values and tick labels', markup: `<div class="grid cards"><jarvis-range-slider label="Budget range" start="5000" end="15000" min="0" max="20000" step="1000" format="currency" currency="USD" tick-interval="5000" show-ticks show-tick-labels show-tooltips></jarvis-range-slider><jarvis-range-slider label="Adoption range" start="15" end="65" min="0" max="100" step="5" format="percent" fraction-digits="0" show-labels show-ticks tick-interval="25" show-tooltips></jarvis-range-slider></div>` },
-        { title: 'Filled and plain track', markup: `<div class="grid cards"><jarvis-range-slider label="Filled track" start="10" end="45" value-suffix="%" show-tooltips show-ticks tick-interval="20"></jarvis-range-slider><jarvis-range-slider label="Plain track" start="55" end="80" value-suffix="%" show-tooltips show-range-fill="false" show-ticks tick-interval="10"></jarvis-range-slider></div>` },
-        { title: 'Readonly, helper, and error states', markup: `<div class="grid cards"><jarvis-range-slider label="Readonly budget band" start="35" end="65" value-prefix="$" value-suffix="k" read-only help-text="Keep the range visible in review and approval flows."></jarvis-range-slider><jarvis-range-slider label="Invalid coverage range" start="10" end="15" min="0" max="100" value-suffix="%" invalid error-text="Coverage should span at least 25 percentage points."></jarvis-range-slider><jarvis-range-slider label="Required spend window" start="20" end="50" required help-text="Choose both bounds before continuing." show-labels></jarvis-range-slider></div>` }
+        { title: 'Range configurations', markup: `<div class="grid cards"><eon-range-slider label="Default mode" start="20" end="60"></eon-range-slider><eon-range-slider label="With labels" start="35" end="65" value-prefix="$" value-suffix="k" show-labels></eon-range-slider><eon-range-slider label="With tooltips" start="15" end="65" value-prefix="$" value-suffix="k" show-tooltips></eon-range-slider><eon-range-slider label="Disabled" start="25" end="75" disabled></eon-range-slider></div>` },
+        { title: 'Formatted values and tick labels', markup: `<div class="grid cards"><eon-range-slider label="Budget range" start="5000" end="15000" min="0" max="20000" step="1000" format="currency" currency="USD" tick-interval="5000" show-ticks show-tick-labels show-tooltips></eon-range-slider><eon-range-slider label="Adoption range" start="15" end="65" min="0" max="100" step="5" format="percent" fraction-digits="0" show-labels show-ticks tick-interval="25" show-tooltips></eon-range-slider></div>` },
+        { title: 'Filled and plain track', markup: `<div class="grid cards"><eon-range-slider label="Filled track" start="10" end="45" value-suffix="%" show-tooltips show-ticks tick-interval="20"></eon-range-slider><eon-range-slider label="Plain track" start="55" end="80" value-suffix="%" show-tooltips show-range-fill="false" show-ticks tick-interval="10"></eon-range-slider></div>` },
+        { title: 'Readonly, helper, and error states', markup: `<div class="grid cards"><eon-range-slider label="Readonly budget band" start="35" end="65" value-prefix="$" value-suffix="k" read-only help-text="Keep the range visible in review and approval flows."></eon-range-slider><eon-range-slider label="Invalid coverage range" start="10" end="15" min="0" max="100" value-suffix="%" invalid error-text="Coverage should span at least 25 percentage points."></eon-range-slider><eon-range-slider label="Required spend window" start="20" end="50" required help-text="Choose both bounds before continuing." show-labels></eon-range-slider></div>` }
       ];
-    case 'jarvis-calendar':
+    case 'eon-calendar':
       return [
-        { title: 'Default and constrained selection', markup: `<div class="grid cards"><jarvis-calendar value="2026-04-15" show-today-button></jarvis-calendar><jarvis-calendar selection-mode="multiple" show-week-numbers first-day-of-week="1" min="2026-04-05" max="2026-04-28" disabled-dates="2026-04-12,2026-04-19" value="2026-04-15,2026-04-16"></jarvis-calendar></div>` },
-        { title: 'Whole-week selection', markup: `<div class="grid cards"><jarvis-calendar selection-mode="multiple" first-day-of-week="1" select-week-on-click show-week-numbers value="2026-04-14"></jarvis-calendar></div>` }
+        { title: 'Default and constrained selection', markup: `<div class="grid cards"><eon-calendar value="2026-04-15" show-today-button></eon-calendar><eon-calendar selection-mode="multiple" show-week-numbers first-day-of-week="1" min="2026-04-05" max="2026-04-28" disabled-dates="2026-04-12,2026-04-19" value="2026-04-15,2026-04-16"></eon-calendar></div>` },
+        { title: 'Whole-week selection', markup: `<div class="grid cards"><eon-calendar selection-mode="multiple" first-day-of-week="1" select-week-on-click show-week-numbers value="2026-04-14"></eon-calendar></div>` }
       ];
-    case 'jarvis-date-box':
+    case 'eon-date-box':
       return [
-        { title: 'Date, time, date-time, and staged apply', markup: `<div class="grid cards"><jarvis-date-box label="Date" type="date" value="2026-04-15" show-today-button open-on-field-click></jarvis-date-box><jarvis-date-box label="Time" type="time" value="22:02" show-today-button></jarvis-date-box><jarvis-date-box label="Date and time" type="datetime-local" value="2026-04-15T22:02" show-today-button></jarvis-date-box><jarvis-date-box label="Apply and cancel staged changes" type="date" value="2026-04-21" apply-value-mode="useButtons" show-clear-button show-today-button help-text="Review the new date before applying it to the invoice schedule."></jarvis-date-box></div>` },
-        { title: 'Required, readonly, and validation', markup: `<div class="grid cards"><jarvis-date-box label="Birthday" type="date" value="1981-04-27" show-clear-button help-text="Used for profile verification."></jarvis-date-box><jarvis-date-box label="Readonly window" type="date" value="2026-04-21" read-only></jarvis-date-box><jarvis-date-box label="Required reminder" type="date" required help-text="Required fields can still guide the user before validation runs."></jarvis-date-box><jarvis-date-box label="Missing date" type="date" invalid error-text="Choose a valid ship date."></jarvis-date-box></div>` }
+        { title: 'Date, time, date-time, and staged apply', markup: `<div class="grid cards"><eon-date-box label="Date" type="date" value="2026-04-15" show-today-button open-on-field-click></eon-date-box><eon-date-box label="Time" type="time" value="22:02" show-today-button></eon-date-box><eon-date-box label="Date and time" type="datetime-local" value="2026-04-15T22:02" show-today-button></eon-date-box><eon-date-box label="Apply and cancel staged changes" type="date" value="2026-04-21" apply-value-mode="useButtons" show-clear-button show-today-button help-text="Review the new date before applying it to the invoice schedule."></eon-date-box></div>` },
+        { title: 'Required, readonly, and validation', markup: `<div class="grid cards"><eon-date-box label="Birthday" type="date" value="1981-04-27" show-clear-button help-text="Used for profile verification."></eon-date-box><eon-date-box label="Readonly window" type="date" value="2026-04-21" read-only></eon-date-box><eon-date-box label="Required reminder" type="date" required help-text="Required fields can still guide the user before validation runs."></eon-date-box><eon-date-box label="Missing date" type="date" invalid error-text="Choose a valid ship date."></eon-date-box></div>` }
       ];
-    case 'jarvis-date-range-box':
+    case 'eon-date-range-box':
       return [
-        { title: 'Range selection, picker actions, and staged apply', markup: `<div class="grid cards"><jarvis-date-range-box label="Vacation period" start="2026-04-12" end="2026-04-18" min="2026-04-01" max="2026-05-15" show-picker-buttons start-placeholder="Start" end-placeholder="End"></jarvis-date-range-box><jarvis-date-range-box label="Clearable range" start="2026-05-01" end="2026-05-08" show-clear-button show-picker-buttons open-on-field-click></jarvis-date-range-box><jarvis-date-range-box label="Stage the range before committing" start="2026-06-10" end="2026-06-14" apply-value-mode="useButtons" show-picker-buttons help-text="Review the publishing window before it updates the campaign."></jarvis-date-range-box></div>` },
-        { title: 'Summary, readonly, and validation', markup: `<div class="grid cards"><jarvis-date-range-box label="Incomplete range" start="2026-04-12" help-text="Pick an end date to complete the request."></jarvis-date-range-box><jarvis-date-range-box label="Readonly itinerary" start="2026-06-01" end="2026-06-08" read-only></jarvis-date-range-box><jarvis-date-range-box label="Required travel window" required help-text="Choose both dates before approving the trip."></jarvis-date-range-box><jarvis-date-range-box label="Invalid range" start="2026-04-18" end="2026-04-12" invalid error-text="End date must be after the start date."></jarvis-date-range-box></div>` },
-        { title: 'Release scheduling workflow', markup: `<div class="grid cards"><jarvis-surface><jarvis-stack gap="1rem"><strong>Choose the release window</strong><jarvis-date-range-box label="Marketing launch window" start="2026-05-12" end="2026-05-19" show-summary use-buttons apply-text="Use this window" cancel-text="Reset draft" help-text="Keep the press and product windows aligned before review."></jarvis-date-range-box><jarvis-date-range-box label="Fallback window" required invalid error-text="Add a fallback window before requesting approval."></jarvis-date-range-box></jarvis-stack></jarvis-surface></div>` }
+        { title: 'Range selection, picker actions, and staged apply', markup: `<div class="grid cards"><eon-date-range-box label="Vacation period" start="2026-04-12" end="2026-04-18" min="2026-04-01" max="2026-05-15" show-picker-buttons start-placeholder="Start" end-placeholder="End"></eon-date-range-box><eon-date-range-box label="Clearable range" start="2026-05-01" end="2026-05-08" show-clear-button show-picker-buttons open-on-field-click></eon-date-range-box><eon-date-range-box label="Stage the range before committing" start="2026-06-10" end="2026-06-14" apply-value-mode="useButtons" show-picker-buttons help-text="Review the publishing window before it updates the campaign."></eon-date-range-box></div>` },
+        { title: 'Summary, readonly, and validation', markup: `<div class="grid cards"><eon-date-range-box label="Incomplete range" start="2026-04-12" help-text="Pick an end date to complete the request."></eon-date-range-box><eon-date-range-box label="Readonly itinerary" start="2026-06-01" end="2026-06-08" read-only></eon-date-range-box><eon-date-range-box label="Required travel window" required help-text="Choose both dates before approving the trip."></eon-date-range-box><eon-date-range-box label="Invalid range" start="2026-04-18" end="2026-04-12" invalid error-text="End date must be after the start date."></eon-date-range-box></div>` },
+        { title: 'Release scheduling workflow', markup: `<div class="grid cards"><eon-surface><eon-stack gap="1rem"><strong>Choose the release window</strong><eon-date-range-box label="Marketing launch window" start="2026-05-12" end="2026-05-19" show-summary use-buttons apply-text="Use this window" cancel-text="Reset draft" help-text="Keep the press and product windows aligned before review."></eon-date-range-box><eon-date-range-box label="Fallback window" required invalid error-text="Add a fallback window before requesting approval."></eon-date-range-box></eon-stack></eon-surface></div>` }
       ];
-    case 'jarvis-file-uploader':
+    case 'eon-file-uploader':
       return [
-        { title: 'Manual and instant upload', markup: `<div class="grid cards"><jarvis-file-uploader label="Profile photo" accept=".png,.jpg" max-files="1" max-file-size="1200000" help-text="Upload one photo under 1.2 MB." upload-mode="manual"></jarvis-file-uploader><jarvis-file-uploader label="Async upload" accept=".pdf,.docx" multiple max-files="4" max-file-size="3000000" upload-mode="instant" help-text="Files begin uploading as soon as they are accepted."></jarvis-file-uploader></div>` },
-        { title: 'Validation and list handling', markup: `<div class="grid cards"><jarvis-file-uploader label="Contract packet" accept=".pdf" required help-text="Use PDF only so legal review can process the files consistently." max-files="2" max-file-size="1500000"></jarvis-file-uploader><jarvis-file-uploader label="Compact trigger" accept=".png,.jpg" show-file-list="false" dropzone="false" browse-text="Browse assets" empty-state-text="Use the browse action to add artwork."></jarvis-file-uploader></div>` },
-        { title: 'Submission packet before final review', markup: `<div class="grid cards"><jarvis-surface><jarvis-stack gap="1rem"><strong>Approval attachments</strong><jarvis-file-uploader label="Required evidence" accept=".pdf,.png" required help-text="Include the annotated screenshot and compliance PDF before opening the review popup." max-files="3" max-file-size="2500000" upload-mode="manual" upload-button-text="Stage files"></jarvis-file-uploader><jarvis-button>Review submission packet</jarvis-button></jarvis-stack></jarvis-surface></div>` }
+        { title: 'Manual and instant upload', markup: `<div class="grid cards"><eon-file-uploader label="Profile photo" accept=".png,.jpg" max-files="1" max-file-size="1200000" help-text="Upload one photo under 1.2 MB." upload-mode="manual"></eon-file-uploader><eon-file-uploader label="Async upload" accept=".pdf,.docx" multiple max-files="4" max-file-size="3000000" upload-mode="instant" help-text="Files begin uploading as soon as they are accepted."></eon-file-uploader></div>` },
+        { title: 'Validation and list handling', markup: `<div class="grid cards"><eon-file-uploader label="Contract packet" accept=".pdf" required help-text="Use PDF only so legal review can process the files consistently." max-files="2" max-file-size="1500000"></eon-file-uploader><eon-file-uploader label="Compact trigger" accept=".png,.jpg" show-file-list="false" dropzone="false" browse-text="Browse assets" empty-state-text="Use the browse action to add artwork."></eon-file-uploader></div>` },
+        { title: 'Submission packet before final review', markup: `<div class="grid cards"><eon-surface><eon-stack gap="1rem"><strong>Approval attachments</strong><eon-file-uploader label="Required evidence" accept=".pdf,.png" required help-text="Include the annotated screenshot and compliance PDF before opening the review popup." max-files="3" max-file-size="2500000" upload-mode="manual" upload-button-text="Stage files"></eon-file-uploader><eon-button>Review submission packet</eon-button></eon-stack></eon-surface></div>` }
       ];
-    case 'jarvis-progress':
+    case 'eon-progress':
       return [
-        { title: 'Determinate progress and tone states', markup: `<div class="grid cards"><jarvis-progress label="Uploading assets" value="64" show-value-label helper-text="3 of 5 files complete."></jarvis-progress><jarvis-progress label="Importing accounts" tone="success" value="84" show-value-label helper-text="Validation checks passed."></jarvis-progress><jarvis-progress label="Migration review" tone="warning" value="38" show-value-label helper-text="Waiting on one final approval."></jarvis-progress><jarvis-progress label="Failed sync" tone="danger" value="12" show-value-label helper-text="The pipeline stopped before completion."></jarvis-progress></div>` },
-        { title: 'Indeterminate status', markup: `<div class="grid cards"><jarvis-progress label="Preparing workspace" indeterminate show-value-label value-suffix=""></jarvis-progress></div>` }
+        { title: 'Determinate progress and tone states', markup: `<div class="grid cards"><eon-progress label="Uploading assets" value="64" show-value-label helper-text="3 of 5 files complete."></eon-progress><eon-progress label="Importing accounts" tone="success" value="84" show-value-label helper-text="Validation checks passed."></eon-progress><eon-progress label="Migration review" tone="warning" value="38" show-value-label helper-text="Waiting on one final approval."></eon-progress><eon-progress label="Failed sync" tone="danger" value="12" show-value-label helper-text="The pipeline stopped before completion."></eon-progress></div>` },
+        { title: 'Indeterminate status', markup: `<div class="grid cards"><eon-progress label="Preparing workspace" indeterminate show-value-label value-suffix=""></eon-progress></div>` }
       ];
-    case 'jarvis-color-box':
+    case 'eon-color-box':
       return [
-        { title: 'Default, alpha channel, and inline apply', markup: `<div class="grid cards"><jarvis-color-box label="Default mode" value="#f05b41"></jarvis-color-box><jarvis-color-box label="Alpha channel" value="rgba(240,91,65,1)" edit-alpha-channel></jarvis-color-box><jarvis-color-box label="Auto apply" value="#2563eb" show-apply-button="false"></jarvis-color-box></div>` },
-        { title: 'Validation, helper text, and custom action copy', markup: `<div class="grid cards"><jarvis-color-box label="Brand presets" value="#111827" help-text="Choose a theme color for highlights and icon accents." presets="#111827;#2563eb;#16a34a;#f59e0b;#dc2626"></jarvis-color-box><jarvis-color-box label="Localized actions" value="#7c3aed" presets="#7c3aed;#a855f7;#c084fc" apply-button-text="Use color" cancel-button-text="Keep current"></jarvis-color-box><jarvis-color-box label="Validation and helper text" value="#16a34a" invalid error-text="Choose a color with better contrast for the current theme."></jarvis-color-box></div>` }
+        { title: 'Default, alpha channel, and inline apply', markup: `<div class="grid cards"><eon-color-box label="Default mode" value="#f05b41"></eon-color-box><eon-color-box label="Alpha channel" value="rgba(240,91,65,1)" edit-alpha-channel></eon-color-box><eon-color-box label="Auto apply" value="#2563eb" show-apply-button="false"></eon-color-box></div>` },
+        { title: 'Validation, helper text, and custom action copy', markup: `<div class="grid cards"><eon-color-box label="Brand presets" value="#111827" help-text="Choose a theme color for highlights and icon accents." presets="#111827;#2563eb;#16a34a;#f59e0b;#dc2626"></eon-color-box><eon-color-box label="Localized actions" value="#7c3aed" presets="#7c3aed;#a855f7;#c084fc" apply-button-text="Use color" cancel-button-text="Keep current"></eon-color-box><eon-color-box label="Validation and helper text" value="#16a34a" invalid error-text="Choose a color with better contrast for the current theme."></eon-color-box></div>` }
       ];
-    case 'jarvis-floating-action-button':
+    case 'eon-floating-action-button':
       return [
-        { title: 'Inline launcher with described actions', markup: `<div class="grid cards"><jarvis-floating-action-button position="inline" extended label="Add row" aria-description="Inline launcher with described follow-up actions." items="New row~Insert a row beneath the active one.|row|success; Invite teammate~Send an access invite to a collaborator.|invite; Duplicate report~Clone the active workspace card.|duplicate"></jarvis-floating-action-button><jarvis-floating-action-button position="inline" label="Compose" direction="right" close-on-select="false" items="Email~Open the email composer.|email; Message~Send a quick chat ping.|message; Calendar~Create a follow-up booking.|calendar"></jarvis-floating-action-button></div>` },
-        { title: 'Bottom-corner launcher with disabled and danger actions', markup: `<div class="grid cards"><jarvis-surface elevated><jarvis-stack><strong>Workspace command center</strong><p>Use a fixed-corner launcher for global actions that stay available from anywhere in the view.</p></jarvis-stack><jarvis-floating-action-button extended label="Quick actions" items="Share update~Send a workspace digest.|share|success; Pin report~Keep this dashboard on top.|pin; Delete draft~Cannot be undone.|delete|danger; Archive project~Unavailable until review closes.|archive|disabled"></jarvis-floating-action-button></jarvis-surface></div>` }
+        { title: 'Inline launcher with described actions', markup: `<div class="grid cards"><eon-floating-action-button position="inline" extended label="Add row" aria-description="Inline launcher with described follow-up actions." items="New row~Insert a row beneath the active one.|row|success; Invite teammate~Send an access invite to a collaborator.|invite; Duplicate report~Clone the active workspace card.|duplicate"></eon-floating-action-button><eon-floating-action-button position="inline" label="Compose" direction="right" close-on-select="false" items="Email~Open the email composer.|email; Message~Send a quick chat ping.|message; Calendar~Create a follow-up booking.|calendar"></eon-floating-action-button></div>` },
+        { title: 'Bottom-corner launcher with disabled and danger actions', markup: `<div class="grid cards"><eon-surface elevated><eon-stack><strong>Workspace command center</strong><p>Use a fixed-corner launcher for global actions that stay available from anywhere in the view.</p></eon-stack><eon-floating-action-button extended label="Quick actions" items="Share update~Send a workspace digest.|share|success; Pin report~Keep this dashboard on top.|pin; Delete draft~Cannot be undone.|delete|danger; Archive project~Unavailable until review closes.|archive|disabled"></eon-floating-action-button></eon-surface></div>` }
       ];
-    case 'jarvis-gallery':
+    case 'eon-gallery':
       return [
-        { title: 'Captions, side thumbnails, and hover pause', markup: `<div class="grid cards"><jarvis-gallery items="Coastal residence~Oceanfront suite with panoramic windows~Featured stay|#dbeafe,#93c5fd; Downtown studio~Creative review room and lounge~Urban workspace|#e0f2fe,#38bdf8; Forest retreat~Calm woodland lodge with spa access~Wellness escape|#dcfce7,#22c55e" show-thumbnails thumbnail-position="side" show-counter pause-on-hover></jarvis-gallery><jarvis-gallery items="North campus~Flexible collaboration floor~New campus|#dbeafe,#60a5fa; South wing~Editorial lounge and lab~Open house|#d1fae5,#10b981; Rooftop deck~Panoramic evening terrace~Preview event|#fef3c7,#f59e0b" slide-show show-indicators show-nav-buttons show-captions show-counter></jarvis-gallery></div>` },
-        { title: 'Compact viewer, offset start, and keyboard navigation', markup: `<div class="grid cards"><jarvis-gallery items="Harbour villa~A compact visual story~Waterfront|#e0f2fe,#38bdf8; Forest studio~Quiet retreat for writers~Editorial|#dcfce7,#22c55e; Skyline loft~Night review suite~Launch prep|#ede9fe,#8b5cf6" height="22rem" start-index="1" show-counter></jarvis-gallery><jarvis-gallery items="Studio one~Minimal gallery without captions~Lookbook|#fef3c7,#f59e0b; Studio two~Focus on the imagery~Moodboard|#fee2e2,#ef4444" show-captions="false" keyboard-navigation="true" show-counter></jarvis-gallery></div>` }
+        { title: 'Captions, side thumbnails, and hover pause', markup: `<div class="grid cards"><eon-gallery items="Coastal residence~Oceanfront suite with panoramic windows~Featured stay|#dbeafe,#93c5fd; Downtown studio~Creative review room and lounge~Urban workspace|#e0f2fe,#38bdf8; Forest retreat~Calm woodland lodge with spa access~Wellness escape|#dcfce7,#22c55e" show-thumbnails thumbnail-position="side" show-counter pause-on-hover></eon-gallery><eon-gallery items="North campus~Flexible collaboration floor~New campus|#dbeafe,#60a5fa; South wing~Editorial lounge and lab~Open house|#d1fae5,#10b981; Rooftop deck~Panoramic evening terrace~Preview event|#fef3c7,#f59e0b" slide-show show-indicators show-nav-buttons show-captions show-counter></eon-gallery></div>` },
+        { title: 'Compact viewer, offset start, and keyboard navigation', markup: `<div class="grid cards"><eon-gallery items="Harbour villa~A compact visual story~Waterfront|#e0f2fe,#38bdf8; Forest studio~Quiet retreat for writers~Editorial|#dcfce7,#22c55e; Skyline loft~Night review suite~Launch prep|#ede9fe,#8b5cf6" height="22rem" start-index="1" show-counter></eon-gallery><eon-gallery items="Studio one~Minimal gallery without captions~Lookbook|#fef3c7,#f59e0b; Studio two~Focus on the imagery~Moodboard|#fee2e2,#ef4444" show-captions="false" keyboard-navigation="true" show-counter></eon-gallery></div>` }
       ];
-    case 'jarvis-chat':
+    case 'eon-chat':
       return [
-        { title: 'Support thread, tone, and staged attachments', markup: `<div class="grid cards"><jarvis-chat label="Account recovery" user="John Doe" status="Agent online" status-tone="success" attachments-enabled composer-help-text="Press Ctrl+Enter to send quickly." max-attachments="2"></jarvis-chat><jarvis-chat label="Support transcript" user="Olivia Peyton" status="Escalated review" status-tone="warning" show-composer="false" messages="system|System|11:50 PM|A supervisor joined the conversation.|Yesterday 4/14/2026|;;other|Support Agent|11:51 PM|Hello, Olivia!|Yesterday 4/14/2026|;;self|Olivia Peyton|11:53 PM|Please send the final report to the operations channel.|Yesterday 4/14/2026|Instructions.pdf~10 KB;;other|Support Agent|11:55 PM|Done. The file is ready for review.|Today 4/15/2026|"></jarvis-chat></div>` },
-        { title: 'Empty, readonly, and compact composer states', markup: `<div class="grid cards"><jarvis-chat label="Onboarding thread" user="Maya Chen" status="Waiting for first reply" empty-state-text="No onboarding updates have been posted yet." composer-help-text="Draft the first update to kick off the handoff." composer-rows="2"></jarvis-chat><jarvis-chat label="Readonly log" user="Victor Norris" status="Archived" status-tone="neutral" show-composer="false" show-avatars="false" show-attachment-sizes="false" messages="system|System|9:10 AM|This conversation is archived for compliance review.|Today 4/15/2026|;;other|Ops Lead|9:12 AM|The export has been stored in the secure evidence vault.|Today 4/15/2026|"></jarvis-chat></div>` }
+        { title: 'Support thread, tone, and staged attachments', markup: `<div class="grid cards"><eon-chat label="Account recovery" user="John Doe" status="Agent online" status-tone="success" attachments-enabled composer-help-text="Press Ctrl+Enter to send quickly." max-attachments="2"></eon-chat><eon-chat label="Support transcript" user="Olivia Peyton" status="Escalated review" status-tone="warning" show-composer="false" messages="system|System|11:50 PM|A supervisor joined the conversation.|Yesterday 4/14/2026|;;other|Support Agent|11:51 PM|Hello, Olivia!|Yesterday 4/14/2026|;;self|Olivia Peyton|11:53 PM|Please send the final report to the operations channel.|Yesterday 4/14/2026|Instructions.pdf~10 KB;;other|Support Agent|11:55 PM|Done. The file is ready for review.|Today 4/15/2026|"></eon-chat></div>` },
+        { title: 'Empty, readonly, and compact composer states', markup: `<div class="grid cards"><eon-chat label="Onboarding thread" user="Maya Chen" status="Waiting for first reply" empty-state-text="No onboarding updates have been posted yet." composer-help-text="Draft the first update to kick off the handoff." composer-rows="2"></eon-chat><eon-chat label="Readonly log" user="Victor Norris" status="Archived" status-tone="neutral" show-composer="false" show-avatars="false" show-attachment-sizes="false" messages="system|System|9:10 AM|This conversation is archived for compliance review.|Today 4/15/2026|;;other|Ops Lead|9:12 AM|The export has been stored in the secure evidence vault.|Today 4/15/2026|"></eon-chat></div>` }
       ];
-    case 'jarvis-load-indicator':
+    case 'eon-load-indicator':
       return [
-        { title: 'Indicator types and sizes', markup: `<div class="pill-row"><jarvis-load-indicator type="ring" size="sm"></jarvis-load-indicator><jarvis-load-indicator type="ring" size="md"></jarvis-load-indicator><jarvis-load-indicator type="dots" size="lg"></jarvis-load-indicator><jarvis-load-indicator type="bars" size="xl"></jarvis-load-indicator></div>` },
-        { title: 'Inline and stacked labels', markup: `<div class="grid cards"><jarvis-load-indicator type="ring" size="md" show-label message="Saving draft"></jarvis-load-indicator><jarvis-load-indicator type="dots" size="lg" layout="stacked" show-label message="Syncing channels"></jarvis-load-indicator></div>` }
+        { title: 'Indicator types and sizes', markup: `<div class="pill-row"><eon-load-indicator type="ring" size="sm"></eon-load-indicator><eon-load-indicator type="ring" size="md"></eon-load-indicator><eon-load-indicator type="dots" size="lg"></eon-load-indicator><eon-load-indicator type="bars" size="xl"></eon-load-indicator></div>` },
+        { title: 'Inline and stacked labels', markup: `<div class="grid cards"><eon-load-indicator type="ring" size="md" show-label message="Saving draft"></eon-load-indicator><eon-load-indicator type="dots" size="lg" layout="stacked" show-label message="Syncing channels"></eon-load-indicator></div>` }
       ];
-    case 'jarvis-load-panel':
+    case 'eon-load-panel':
       return [
-        { title: 'Overlay, pane, and dismissible states', markup: `<div class="grid cards"><jarvis-load-panel visible heading="Loading employee profile" message="Fetching the profile and recent activity" description="This usually takes a few seconds while we hydrate the card and timeline." progress-value="72" show-cancel-button><jarvis-surface><jarvis-stack><strong>John Heart</strong><p>Birth date: 1978/01/09</p><p>Address: 424 N Main St.</p></jarvis-stack></jarvis-surface></jarvis-load-panel><jarvis-load-panel visible message="Refreshing dashboard" indicator-type="dots" indicator-size="lg" show-pane="false"><jarvis-surface><jarvis-stack><strong>Analytics board</strong><p>Updating tiles and activity feed...</p></jarvis-stack></jarvis-surface></jarvis-load-panel></div>` },
-        { title: 'Compact pane with hidden indicator', markup: `<div class="grid cards"><jarvis-load-panel visible heading="Saving settings" message="Committing theme changes to the workspace." show-indicator="false" show-overlay="false"><jarvis-surface><jarvis-stack><strong>Theme settings</strong><p>Accent, density, and motion preferences are being stored.</p></jarvis-stack></jarvis-surface></jarvis-load-panel></div>` }
+        { title: 'Overlay, pane, and dismissible states', markup: `<div class="grid cards"><eon-load-panel visible heading="Loading employee profile" message="Fetching the profile and recent activity" description="This usually takes a few seconds while we hydrate the card and timeline." progress-value="72" show-cancel-button><eon-surface><eon-stack><strong>John Heart</strong><p>Birth date: 1978/01/09</p><p>Address: 424 N Main St.</p></eon-stack></eon-surface></eon-load-panel><eon-load-panel visible message="Refreshing dashboard" indicator-type="dots" indicator-size="lg" show-pane="false"><eon-surface><eon-stack><strong>Analytics board</strong><p>Updating tiles and activity feed...</p></eon-stack></eon-surface></eon-load-panel></div>` },
+        { title: 'Compact pane with hidden indicator', markup: `<div class="grid cards"><eon-load-panel visible heading="Saving settings" message="Committing theme changes to the workspace." show-indicator="false" show-overlay="false"><eon-surface><eon-stack><strong>Theme settings</strong><p>Accent, density, and motion preferences are being stored.</p></eon-stack></eon-surface></eon-load-panel></div>` }
       ];
-    case 'jarvis-scroll-view':
+    case 'eon-scroll-view':
       return [
-        { title: 'Long-form content and reach-bottom', markup: `<div class="grid cards"><jarvis-scroll-view height="18rem" top-status-text="Top of the workspace timeline" bottom-status-text="More updates below" show-shadows show-refresh-button refresh-label="Reload feed"><jarvis-stack><p>Content has been updated on the reach-bottom event.</p><p>Content has been updated on the reach-bottom event.</p><p>Content has been updated on the reach-bottom event.</p><p>Content has been updated on the reach-bottom event.</p><p>Content has been updated on the reach-bottom event.</p><p>Content has been updated on the reach-bottom event.</p><p>Content has been updated on the reach-bottom event.</p><p>Content has been updated on the reach-bottom event.</p></jarvis-stack></jarvis-scroll-view><jarvis-scroll-view height="18rem" show-scrollbar="always"><div style="display:flex;gap:1rem;width:54rem;"><jarvis-surface>Panel A</jarvis-surface><jarvis-surface>Panel B</jarvis-surface><jarvis-surface>Panel C</jarvis-surface><jarvis-surface>Panel D</jarvis-surface></div></jarvis-scroll-view></div>` },
-        { title: 'Status rows, quiet edges, and refresh states', markup: `<div class="grid cards"><jarvis-scroll-view height="16rem" show-shadows top-status-text="Back at the beginning" bottom-status-text="Continue scrolling for more activity" show-refresh-button refresh-label="Sync updates"><jarvis-stack><p>System note 01</p><p>System note 02</p><p>System note 03</p><p>System note 04</p><p>System note 05</p><p>System note 06</p><p>System note 07</p><p>System note 08</p><p>System note 09</p><p>System note 10</p></jarvis-stack></jarvis-scroll-view><jarvis-scroll-view height="16rem" show-refresh-button refreshing refresh-label="Syncing feed"><jarvis-stack><p>Refresh states should stay visible without covering the scroll surface.</p><p>Use the action for staged reloads or feed refreshes.</p><p>Additional content keeps the scrollbar visible.</p><p>More content below.</p><p>Even more content.</p></jarvis-stack></jarvis-scroll-view></div>` }
+        { title: 'Long-form content and reach-bottom', markup: `<div class="grid cards"><eon-scroll-view height="18rem" top-status-text="Top of the workspace timeline" bottom-status-text="More updates below" show-shadows show-refresh-button refresh-label="Reload feed"><eon-stack><p>Content has been updated on the reach-bottom event.</p><p>Content has been updated on the reach-bottom event.</p><p>Content has been updated on the reach-bottom event.</p><p>Content has been updated on the reach-bottom event.</p><p>Content has been updated on the reach-bottom event.</p><p>Content has been updated on the reach-bottom event.</p><p>Content has been updated on the reach-bottom event.</p><p>Content has been updated on the reach-bottom event.</p></eon-stack></eon-scroll-view><eon-scroll-view height="18rem" show-scrollbar="always"><div style="display:flex;gap:1rem;width:54rem;"><eon-surface>Panel A</eon-surface><eon-surface>Panel B</eon-surface><eon-surface>Panel C</eon-surface><eon-surface>Panel D</eon-surface></div></eon-scroll-view></div>` },
+        { title: 'Status rows, quiet edges, and refresh states', markup: `<div class="grid cards"><eon-scroll-view height="16rem" show-shadows top-status-text="Back at the beginning" bottom-status-text="Continue scrolling for more activity" show-refresh-button refresh-label="Sync updates"><eon-stack><p>System note 01</p><p>System note 02</p><p>System note 03</p><p>System note 04</p><p>System note 05</p><p>System note 06</p><p>System note 07</p><p>System note 08</p><p>System note 09</p><p>System note 10</p></eon-stack></eon-scroll-view><eon-scroll-view height="16rem" show-refresh-button refreshing refresh-label="Syncing feed"><eon-stack><p>Refresh states should stay visible without covering the scroll surface.</p><p>Use the action for staged reloads or feed refreshes.</p><p>Additional content keeps the scrollbar visible.</p><p>More content below.</p><p>Even more content.</p></eon-stack></eon-scroll-view></div>` }
       ];
-    case 'jarvis-sortable':
+    case 'eon-sortable':
       return [
-        { title: 'Kanban board with live counts', markup: `<jarvis-sortable items="Not Started/Report on the State of Engineering Dept|Bart Armaz|success; Not Started/Staff Productivity Report|Brett Wade|success; Need Assistance/Update Employee Files with New NDA|Greta Sims|success; Need Assistance/Sign Updated NDA|Ed Holmes|warning; In Progress/Health Insurance|Samantha Bright|warning; In Progress/NDA|Greta Sims|warning; Deferred/New HDMI Spec|Bart Armaz|success; Deferred/Refund Request|Ed Holmes|danger"></jarvis-sortable>` },
-        { title: 'Compact board and empty stages', markup: `<jarvis-sortable compact columns="Backlog,Ready,Review,Done" empty-column-text="Queue is clear" items="Backlog/Write launch brief|Olivia Peyton|success; Ready/Prep stakeholder deck|Victor Norris|warning; Review/Confirm launch date|Maya Chen|danger"></jarvis-sortable>` },
-        { title: 'Readonly board summary', markup: `<jarvis-sortable disabled show-meta="false" columns="Planned,Active,Completed" empty-column-text="No cards in this stage" items="Planned/Refresh hiring panel|Today|success; Active/Review launch metrics|Tomorrow|warning; Completed/Archive Q1 board|Done|neutral"></jarvis-sortable>` }
+        { title: 'Kanban board with live counts', markup: `<eon-sortable items="Not Started/Report on the State of Engineering Dept|Bart Armaz|success; Not Started/Staff Productivity Report|Brett Wade|success; Need Assistance/Update Employee Files with New NDA|Greta Sims|success; Need Assistance/Sign Updated NDA|Ed Holmes|warning; In Progress/Health Insurance|Samantha Bright|warning; In Progress/NDA|Greta Sims|warning; Deferred/New HDMI Spec|Bart Armaz|success; Deferred/Refund Request|Ed Holmes|danger"></eon-sortable>` },
+        { title: 'Compact board and empty stages', markup: `<eon-sortable compact columns="Backlog,Ready,Review,Done" empty-column-text="Queue is clear" items="Backlog/Write launch brief|Olivia Peyton|success; Ready/Prep stakeholder deck|Victor Norris|warning; Review/Confirm launch date|Maya Chen|danger"></eon-sortable>` },
+        { title: 'Readonly board summary', markup: `<eon-sortable disabled show-meta="false" columns="Planned,Active,Completed" empty-column-text="No cards in this stage" items="Planned/Refresh hiring panel|Today|success; Active/Review launch metrics|Tomorrow|warning; Completed/Archive Q1 board|Done|neutral"></eon-sortable>` }
       ];
-    case 'jarvis-speech-to-text':
+    case 'eon-speech-to-text':
       return [
-        { title: 'Display modes', markup: `<div class="grid cards"><jarvis-speech-to-text label="Icon only" display-mode="icon"></jarvis-speech-to-text><jarvis-speech-to-text label="Contained trigger" display-mode="button"></jarvis-speech-to-text><jarvis-speech-to-text label="Extended transcript" display-mode="extended"></jarvis-speech-to-text></div>` },
-        { title: 'Clear-on-start, transcript controls, and language options', markup: `<div class="grid cards"><jarvis-speech-to-text label="Interview capture" display-mode="button" clear-on-start auto-stop-after-final max-length="160" show-options></jarvis-speech-to-text><jarvis-speech-to-text label="Minimal trigger" display-mode="icon" show-transcript="false" show-clear-button="false" interim-results="false"></jarvis-speech-to-text></div>` }
+        { title: 'Display modes', markup: `<div class="grid cards"><eon-speech-to-text label="Icon only" display-mode="icon"></eon-speech-to-text><eon-speech-to-text label="Contained trigger" display-mode="button"></eon-speech-to-text><eon-speech-to-text label="Extended transcript" display-mode="extended"></eon-speech-to-text></div>` },
+        { title: 'Clear-on-start, transcript controls, and language options', markup: `<div class="grid cards"><eon-speech-to-text label="Interview capture" display-mode="button" clear-on-start auto-stop-after-final max-length="160" show-options></eon-speech-to-text><eon-speech-to-text label="Minimal trigger" display-mode="icon" show-transcript="false" show-clear-button="false" interim-results="false"></eon-speech-to-text></div>` }
       ];
-    case 'jarvis-tile-view':
+    case 'eon-tile-view':
       return [
-        { title: 'Horizontal and vertical tile browsing', markup: `<div class="grid cards"><jarvis-tile-view items="Hamburg Suites|$299 per night|#dbeafe,#60a5fa|2x2|Featured; Forest Retreat|Boardroom and wellness wing|#dcfce7,#22c55e|1x2|Wellness; City Loft|Skyline meeting room|#ede9fe,#8b5cf6|1x1|Urban; Harbour Villa|Waterfront residence|#fef3c7,#f59e0b|1x1|New"></jarvis-tile-view><jarvis-tile-view direction="vertical" items="North Campus|Innovation lab|#e0f2fe,#38bdf8|2x1|Live; Studio Nine|Production floor|#fee2e2,#ef4444|1x1|Studio; Harbour Deck|Executive suite|#fef3c7,#f59e0b|1x2|Review"></jarvis-tile-view></div>` },
-        { title: 'Readonly and disabled tiles', markup: `<div class="grid cards"><jarvis-tile-view read-only items="Launch prep|Campaign command room|#dbeafe,#60a5fa|2x1|Featured; North Campus|Innovation lab|#e0f2fe,#38bdf8|1x1|Live; Legacy archive|Read-only records|#e2e8f0,#94a3b8|1x1|Archived|disabled"></jarvis-tile-view><jarvis-tile-view show-subtitles="false" show-selection-indicator="false" items="Boardroom|Schedule room|#fef3c7,#f59e0b|1x1|Open; Studio|Editorial suite|#ede9fe,#8b5cf6|1x1|Reserved; Terrace|Event deck|#dcfce7,#22c55e|2x1|Booked"></jarvis-tile-view></div>` }
+        { title: 'Horizontal and vertical tile browsing', markup: `<div class="grid cards"><eon-tile-view items="Hamburg Suites|$299 per night|#dbeafe,#60a5fa|2x2|Featured; Forest Retreat|Boardroom and wellness wing|#dcfce7,#22c55e|1x2|Wellness; City Loft|Skyline meeting room|#ede9fe,#8b5cf6|1x1|Urban; Harbour Villa|Waterfront residence|#fef3c7,#f59e0b|1x1|New"></eon-tile-view><eon-tile-view direction="vertical" items="North Campus|Innovation lab|#e0f2fe,#38bdf8|2x1|Live; Studio Nine|Production floor|#fee2e2,#ef4444|1x1|Studio; Harbour Deck|Executive suite|#fef3c7,#f59e0b|1x2|Review"></eon-tile-view></div>` },
+        { title: 'Readonly and disabled tiles', markup: `<div class="grid cards"><eon-tile-view read-only items="Launch prep|Campaign command room|#dbeafe,#60a5fa|2x1|Featured; North Campus|Innovation lab|#e0f2fe,#38bdf8|1x1|Live; Legacy archive|Read-only records|#e2e8f0,#94a3b8|1x1|Archived|disabled"></eon-tile-view><eon-tile-view show-subtitles="false" show-selection-indicator="false" items="Boardroom|Schedule room|#fef3c7,#f59e0b|1x1|Open; Studio|Editorial suite|#ede9fe,#8b5cf6|1x1|Reserved; Terrace|Event deck|#dcfce7,#22c55e|2x1|Booked"></eon-tile-view></div>` }
       ];
-    case 'jarvis-tree-view':
+    case 'eon-tree-view':
       return [
-        { title: 'Catalog search, toolbar, and recursive selection', markup: `<div class="grid cards"><jarvis-tree-view items="Stores/Super Mart of the West/Video Players/HD Video Player; Stores/Super Mart of the West/Televisions/SuperLCD 42; Stores/Super Mart of the West/Televisions/SuperLED 50; Stores/Braeburn/Monitors/DesktopLCD 19; Stores/Braeburn/Projectors/Projector Plus" search-enabled search-mode="startsWith" search-placeholder="Search products" show-toolbar show-select-all show-status selection-mode="multiple" show-check-boxes-mode="normal" select-nodes-recursive selected="Stores/Super Mart of the West/Televisions/SuperLCD 42,Stores/Braeburn/Projectors/Projector Plus"></jarvis-tree-view><jarvis-tree-view items="Employees/Leadership/John Heart (CEO); Employees/Leadership/Samantha Bright (COO); Employees/Operations/Victor Norris (Shipping Assistant); Employees/Operations/Kevin Carter (Shipping Manager); Employees/Engineering/Amelia Harper (Network Admin); Employees/Engineering/Wally Hobbs (Programmer)" selection-mode="multiple" show-check-boxes-mode="normal" show-toolbar show-select-all show-status selected="Employees/Operations/Victor Norris (Shipping Assistant)" select-by-click="false" empty-state-text="No employees match the current search."></jarvis-tree-view></div>` },
-        { title: 'Exact tree search and clear selection', markup: `<div class="grid cards"><jarvis-tree-view items="Stores/Super Mart of the West/Video Players/HD Video Player; Stores/Super Mart of the West/Televisions/SuperLCD 42; Stores/Super Mart of the West/Televisions/SuperLED 50; Stores/Braeburn/Monitors/DesktopLCD 19; Stores/Braeburn/Projectors/Projector Plus" search-enabled search-mode="equals" show-toolbar show-select-all show-status search-placeholder="Type a full node label" empty-state-text="No catalog nodes match this exact search."></jarvis-tree-view></div>` }
+        { title: 'Catalog search, toolbar, and recursive selection', markup: `<div class="grid cards"><eon-tree-view items="Stores/Super Mart of the West/Video Players/HD Video Player; Stores/Super Mart of the West/Televisions/SuperLCD 42; Stores/Super Mart of the West/Televisions/SuperLED 50; Stores/Braeburn/Monitors/DesktopLCD 19; Stores/Braeburn/Projectors/Projector Plus" search-enabled search-mode="startsWith" search-placeholder="Search products" show-toolbar show-select-all show-status selection-mode="multiple" show-check-boxes-mode="normal" select-nodes-recursive selected="Stores/Super Mart of the West/Televisions/SuperLCD 42,Stores/Braeburn/Projectors/Projector Plus"></eon-tree-view><eon-tree-view items="Employees/Leadership/John Heart (CEO); Employees/Leadership/Samantha Bright (COO); Employees/Operations/Victor Norris (Shipping Assistant); Employees/Operations/Kevin Carter (Shipping Manager); Employees/Engineering/Amelia Harper (Network Admin); Employees/Engineering/Wally Hobbs (Programmer)" selection-mode="multiple" show-check-boxes-mode="normal" show-toolbar show-select-all show-status selected="Employees/Operations/Victor Norris (Shipping Assistant)" select-by-click="false" empty-state-text="No employees match the current search."></eon-tree-view></div>` },
+        { title: 'Exact tree search and clear selection', markup: `<div class="grid cards"><eon-tree-view items="Stores/Super Mart of the West/Video Players/HD Video Player; Stores/Super Mart of the West/Televisions/SuperLCD 42; Stores/Super Mart of the West/Televisions/SuperLED 50; Stores/Braeburn/Monitors/DesktopLCD 19; Stores/Braeburn/Projectors/Projector Plus" search-enabled search-mode="equals" show-toolbar show-select-all show-status search-placeholder="Type a full node label" empty-state-text="No catalog nodes match this exact search."></eon-tree-view></div>` }
       ];
-    case 'jarvis-popup':
+    case 'eon-popup':
       return [
-        { title: 'Editorial header, status, and sticky footer', markup: `<jarvis-popup open heading="Information" eyebrow="Workspace summary" status="Live" description="Use popup for employee details, media surfaces, and richer confirmation flows." aria-description="Information popup with footer actions and live workspace status." initial-focus="close" show-overlay="false" position="top" width="30rem" sticky-footer><span slot="subtitle">652 Avonwick Gate</span><p>Keep the popup compact when the surrounding page should remain visible, but still give the header and footer enough structure to feel deliberate.</p><div slot="footer"><jarvis-button variant="outline">Send</jarvis-button><jarvis-button>Close</jarvis-button></div></jarvis-popup>` },
-        { title: 'Bottom-sheet handle and toned confirmation', markup: `<jarvis-popup open heading="Downtown Inn" eyebrow="Travel review" status="Needs approval" tone="warning" description="Bottom positioning works well for booking, mobile confirmation, and staged next actions." show-overlay="false" position="bottom" size="sm" show-handle><p>Popups can also hold compact content regions with one clear follow-up action.</p><div slot="footer"><jarvis-button variant="outline">Dismiss</jarvis-button><jarvis-button>Book</jarvis-button></div></jarvis-popup>` },
-        { title: 'Review workflow and staged footer actions', markup: `<jarvis-popup open heading="Submission review" eyebrow="Release workflow" status="Needs decision" description="Use popup when validation is done and the user needs one final structured decision point." width="34rem" sticky-footer show-overlay="false"><div style="display:grid;gap:1rem;"><div style="display:grid;gap:0.45rem;"><strong>Checks completed</strong><span style="color:var(--jarvis-semantic-text-secondary);">Localization, analytics, accessibility, and release notes are all ready for approval.</span></div><div style="display:grid;gap:0.55rem;padding:0.9rem 1rem;border:1px solid rgba(120,138,164,0.16);border-radius:1rem;background:rgba(248,250,252,0.82);"><strong>Outstanding note</strong><span style="color:var(--jarvis-semantic-text-secondary);">Legal review requested one final screenshot on the changelog page before publication.</span></div></div><div slot="footer"><jarvis-button variant="outline">Request changes</jarvis-button><jarvis-button>Approve release</jarvis-button></div></jarvis-popup>` },
-        { title: 'Media layout and fullscreen detail', markup: `<div class="grid cards"><jarvis-popup open heading="Gallery spotlight" eyebrow="Marketing review" status="Ready" width="34rem" max-height="34rem" body-padding="none" show-overlay="false"><div style="display:grid;gap:0;"><div style="min-height:14rem;background:linear-gradient(135deg,#dbeafe,#93c5fd);"></div><div style="padding:1.25rem;display:grid;gap:0.75rem;"><strong>Campaign launch story</strong><p>Use a no-padding body when the top region behaves like a media surface rather than a padded article.</p></div></div><div slot="footer"><jarvis-button variant="outline">Share</jarvis-button><jarvis-button>Publish</jarvis-button></div></jarvis-popup><jarvis-popup open heading="Workspace takeover" eyebrow="Command center" status="Focused" full-screen width="60rem" max-height="40rem" show-overlay="false"><div style="display:grid;grid-template-columns:minmax(14rem,18rem) 1fr;min-height:20rem;"><div style="padding:1.25rem;border-right:1px solid rgba(120,138,164,0.16);display:grid;gap:0.75rem;"><strong>Sections</strong><jarvis-button variant="ghost">Overview</jarvis-button><jarvis-button variant="ghost">Participants</jarvis-button><jarvis-button variant="ghost">Files</jarvis-button></div><div style="padding:1.25rem;display:grid;gap:0.75rem;"><strong>Full-screen popup</strong><p>Use this mode for image review, multi-column workflows, and denser detail pages that still need modal focus.</p></div></div><div slot="footer"><jarvis-button variant="outline">Cancel</jarvis-button><jarvis-button>Continue</jarvis-button></div></jarvis-popup></div>` }
+        { title: 'Editorial header, status, and sticky footer', markup: `<eon-popup open heading="Information" eyebrow="Workspace summary" status="Live" description="Use popup for employee details, media surfaces, and richer confirmation flows." aria-description="Information popup with footer actions and live workspace status." initial-focus="close" show-overlay="false" position="top" width="30rem" sticky-footer><span slot="subtitle">652 Avonwick Gate</span><p>Keep the popup compact when the surrounding page should remain visible, but still give the header and footer enough structure to feel deliberate.</p><div slot="footer"><eon-button variant="outline">Send</eon-button><eon-button>Close</eon-button></div></eon-popup>` },
+        { title: 'Bottom-sheet handle and toned confirmation', markup: `<eon-popup open heading="Downtown Inn" eyebrow="Travel review" status="Needs approval" tone="warning" description="Bottom positioning works well for booking, mobile confirmation, and staged next actions." show-overlay="false" position="bottom" size="sm" show-handle><p>Popups can also hold compact content regions with one clear follow-up action.</p><div slot="footer"><eon-button variant="outline">Dismiss</eon-button><eon-button>Book</eon-button></div></eon-popup>` },
+        { title: 'Review workflow and staged footer actions', markup: `<eon-popup open heading="Submission review" eyebrow="Release workflow" status="Needs decision" description="Use popup when validation is done and the user needs one final structured decision point." width="34rem" sticky-footer show-overlay="false"><div style="display:grid;gap:1rem;"><div style="display:grid;gap:0.45rem;"><strong>Checks completed</strong><span style="color:var(--eon-semantic-text-secondary);">Localization, analytics, accessibility, and release notes are all ready for approval.</span></div><div style="display:grid;gap:0.55rem;padding:0.9rem 1rem;border:1px solid rgba(120,138,164,0.16);border-radius:1rem;background:rgba(248,250,252,0.82);"><strong>Outstanding note</strong><span style="color:var(--eon-semantic-text-secondary);">Legal review requested one final screenshot on the changelog page before publication.</span></div></div><div slot="footer"><eon-button variant="outline">Request changes</eon-button><eon-button>Approve release</eon-button></div></eon-popup>` },
+        { title: 'Media layout and fullscreen detail', markup: `<div class="grid cards"><eon-popup open heading="Gallery spotlight" eyebrow="Marketing review" status="Ready" width="34rem" max-height="34rem" body-padding="none" show-overlay="false"><div style="display:grid;gap:0;"><div style="min-height:14rem;background:linear-gradient(135deg,#dbeafe,#93c5fd);"></div><div style="padding:1.25rem;display:grid;gap:0.75rem;"><strong>Campaign launch story</strong><p>Use a no-padding body when the top region behaves like a media surface rather than a padded article.</p></div></div><div slot="footer"><eon-button variant="outline">Share</eon-button><eon-button>Publish</eon-button></div></eon-popup><eon-popup open heading="Workspace takeover" eyebrow="Command center" status="Focused" full-screen width="60rem" max-height="40rem" show-overlay="false"><div style="display:grid;grid-template-columns:minmax(14rem,18rem) 1fr;min-height:20rem;"><div style="padding:1.25rem;border-right:1px solid rgba(120,138,164,0.16);display:grid;gap:0.75rem;"><strong>Sections</strong><eon-button variant="ghost">Overview</eon-button><eon-button variant="ghost">Participants</eon-button><eon-button variant="ghost">Files</eon-button></div><div style="padding:1.25rem;display:grid;gap:0.75rem;"><strong>Full-screen popup</strong><p>Use this mode for image review, multi-column workflows, and denser detail pages that still need modal focus.</p></div></div><div slot="footer"><eon-button variant="outline">Cancel</eon-button><eon-button>Continue</eon-button></div></eon-popup></div>` }
       ];
-    case 'jarvis-action-sheet':
+    case 'eon-action-sheet':
       return [
-        { title: 'Bottom sheet presentation', markup: `<jarvis-action-sheet open heading="Choose action" description="Use the bottom sheet for mobile-first task actions." width="24rem" value="Review/Request approval" items="Communication/Call||default|Start a voice call.; Communication/Send message||default|Open the threaded composer.; Review/Request approval||success|Notify approvers.; Review/Export summary||default|Send a shareable recap.; Danger/Delete draft||danger|This cannot be undone."></jarvis-action-sheet>` },
-        { title: 'Popover presentation', markup: `<jarvis-action-sheet open heading="Choose action" description="Use popover mode when the sheet should stay anchored to a trigger region." presentation="popover" show-handle="false" close-on-outside-click="false" width="22rem" items="Reply/Quick reply||default|Respond with a prepared summary.; Reply/Forward||default|Share with another reviewer.; Organize/Archive||warning|Move this thread out of the active queue.; Organize/Delete||danger|Remove this thread permanently."></jarvis-action-sheet>` },
-        { title: 'Remembered action and compact rows', markup: `<jarvis-action-sheet open heading="Recent command" description="Hide descriptions when the command set is already familiar and keep the last choice visibly selected." value="Review/Export summary" show-descriptions="false" width="22rem" items="Review/Request approval||success|Notify approvers.; Review/Export summary||default|Send a shareable recap.; Review/Send to finance||warning|Needs cost-center confirmation.; Danger/Delete draft||danger|This cannot be undone."></jarvis-action-sheet>` },
-        { title: 'Approval routing and destructive separation', markup: `<div class="grid cards"><jarvis-action-sheet open heading="Route submission" description="Keep approval, escalation, and destructive actions visually separate when a review step branches." width="24rem" value="Approvals/Request legal review" items="Approvals/Approve now||success|Publish the release immediately.; Approvals/Request legal review||warning|Send the draft back for legal review.; Approvals/Schedule publish||default|Choose a later release window.; Organize/Archive draft||default|Move this draft out of the active queue.; Danger/Delete release||danger|This action permanently removes the release."></jarvis-action-sheet><jarvis-action-sheet open heading="Compact command list" description="Popover mode works well for anchored review actions after validation completes." presentation="popover" show-handle="false" show-cancel-button="false" width="21rem" items="Review/Open summary||default|Inspect the submission summary.; Review/Assign reviewer||default|Route to another approver.; Review/Reject submission||danger|Mark the submission as rejected."></jarvis-action-sheet></div>` }
+        { title: 'Bottom sheet presentation', markup: `<eon-action-sheet open heading="Choose action" description="Use the bottom sheet for mobile-first task actions." width="24rem" value="Review/Request approval" items="Communication/Call||default|Start a voice call.; Communication/Send message||default|Open the threaded composer.; Review/Request approval||success|Notify approvers.; Review/Export summary||default|Send a shareable recap.; Danger/Delete draft||danger|This cannot be undone."></eon-action-sheet>` },
+        { title: 'Popover presentation', markup: `<eon-action-sheet open heading="Choose action" description="Use popover mode when the sheet should stay anchored to a trigger region." presentation="popover" show-handle="false" close-on-outside-click="false" width="22rem" items="Reply/Quick reply||default|Respond with a prepared summary.; Reply/Forward||default|Share with another reviewer.; Organize/Archive||warning|Move this thread out of the active queue.; Organize/Delete||danger|Remove this thread permanently."></eon-action-sheet>` },
+        { title: 'Remembered action and compact rows', markup: `<eon-action-sheet open heading="Recent command" description="Hide descriptions when the command set is already familiar and keep the last choice visibly selected." value="Review/Export summary" show-descriptions="false" width="22rem" items="Review/Request approval||success|Notify approvers.; Review/Export summary||default|Send a shareable recap.; Review/Send to finance||warning|Needs cost-center confirmation.; Danger/Delete draft||danger|This cannot be undone."></eon-action-sheet>` },
+        { title: 'Approval routing and destructive separation', markup: `<div class="grid cards"><eon-action-sheet open heading="Route submission" description="Keep approval, escalation, and destructive actions visually separate when a review step branches." width="24rem" value="Approvals/Request legal review" items="Approvals/Approve now||success|Publish the release immediately.; Approvals/Request legal review||warning|Send the draft back for legal review.; Approvals/Schedule publish||default|Choose a later release window.; Organize/Archive draft||default|Move this draft out of the active queue.; Danger/Delete release||danger|This action permanently removes the release."></eon-action-sheet><eon-action-sheet open heading="Compact command list" description="Popover mode works well for anchored review actions after validation completes." presentation="popover" show-handle="false" show-cancel-button="false" width="21rem" items="Review/Open summary||default|Inspect the submission summary.; Review/Assign reviewer||default|Route to another approver.; Review/Reject submission||danger|Mark the submission as rejected."></eon-action-sheet></div>` }
       ];
-    case 'jarvis-breadcrumb':
+    case 'eon-breadcrumb':
       return [
-        { title: 'Hierarchy', markup: `<jarvis-breadcrumb items="Workspace,Projects,Jarvis UI,Components"></jarvis-breadcrumb>` }
+        { title: 'Hierarchy', markup: `<eon-breadcrumb items="Workspace,Projects,Eon UI,Components"></eon-breadcrumb>` }
       ];
-    case 'jarvis-list':
+    case 'eon-list':
       return [
-        { title: 'Grouped search and toolbar actions', markup: `<div class="grid cards"><jarvis-list items="Hamburg/Hamburg Suites~20099, An Der Alster 82; Hamburg/The Park Hotel~20537, Borstelmannsweg 82; Honolulu/Honolulu Inn~96801, 822 Mauna Loa Rd; Honolulu/Waikiki Beach Hotel~96801, 800 Waikiki Ave" selection-mode="multiple" search-enabled search-mode="startsWith" show-selection-controls show-toolbar show-select-all show-status search-placeholder="Search hotels" selected="Hamburg/Hamburg Suites~20099, An Der Alster 82,Hamburg/The Park Hotel~20537, Borstelmannsweg 82"></jarvis-list><jarvis-list items="Backlog/Prepare 2026 Financial Plan~Assigned to the finance team; Backlog/Update personnel files~Requires HR review; In progress/New website rollout~Coordinate design and engineering; In progress/Comment on revenue projections~Waiting on finance" selection-mode="multiple" show-selection-controls show-toolbar show-select-all show-status selected="Backlog/Prepare 2026 Financial Plan~Assigned to the finance team,In progress/New website rollout~Coordinate design and engineering"></jarvis-list></div>` },
-        { title: 'Exact matching and empty-state filtering', markup: `<div class="grid cards"><jarvis-list items="Launch checklist/Confirm analytics wiring~Verify event coverage before release; Launch checklist/Review permissions copy~Confirm the latest localized strings; Launch checklist/QA keyboard navigation~Focus and tab order must be stable" search-enabled search-mode="startsWith" show-toolbar show-status search-placeholder="Filter checklist"></jarvis-list><jarvis-list items="OPS-100/Operations code 100~Primary release queue; OPS-120/Operations code 120~Fallback release queue; OPS-140/Operations code 140~Read-only release archive" search-enabled search-mode="equals" search-placeholder="Type an exact code" empty-state-text="No tasks match the current filter."></jarvis-list></div>` }
+        { title: 'Grouped search and toolbar actions', markup: `<div class="grid cards"><eon-list items="Hamburg/Hamburg Suites~20099, An Der Alster 82; Hamburg/The Park Hotel~20537, Borstelmannsweg 82; Honolulu/Honolulu Inn~96801, 822 Mauna Loa Rd; Honolulu/Waikiki Beach Hotel~96801, 800 Waikiki Ave" selection-mode="multiple" search-enabled search-mode="startsWith" show-selection-controls show-toolbar show-select-all show-status search-placeholder="Search hotels" selected="Hamburg/Hamburg Suites~20099, An Der Alster 82,Hamburg/The Park Hotel~20537, Borstelmannsweg 82"></eon-list><eon-list items="Backlog/Prepare 2026 Financial Plan~Assigned to the finance team; Backlog/Update personnel files~Requires HR review; In progress/New website rollout~Coordinate design and engineering; In progress/Comment on revenue projections~Waiting on finance" selection-mode="multiple" show-selection-controls show-toolbar show-select-all show-status selected="Backlog/Prepare 2026 Financial Plan~Assigned to the finance team,In progress/New website rollout~Coordinate design and engineering"></eon-list></div>` },
+        { title: 'Exact matching and empty-state filtering', markup: `<div class="grid cards"><eon-list items="Launch checklist/Confirm analytics wiring~Verify event coverage before release; Launch checklist/Review permissions copy~Confirm the latest localized strings; Launch checklist/QA keyboard navigation~Focus and tab order must be stable" search-enabled search-mode="startsWith" show-toolbar show-status search-placeholder="Filter checklist"></eon-list><eon-list items="OPS-100/Operations code 100~Primary release queue; OPS-120/Operations code 120~Fallback release queue; OPS-140/Operations code 140~Read-only release archive" search-enabled search-mode="equals" search-placeholder="Type an exact code" empty-state-text="No tasks match the current filter."></eon-list></div>` }
       ];
-    case 'jarvis-badge':
+    case 'eon-badge':
       return [
-        { title: 'Status labels', markup: `<div class="pill-row"><jarvis-badge>Default</jarvis-badge><jarvis-badge tone="success">Ready</jarvis-badge><jarvis-badge tone="warning">Review</jarvis-badge><jarvis-badge tone="danger">Blocked</jarvis-badge></div>` }
+        { title: 'Status labels', markup: `<div class="pill-row"><eon-badge>Default</eon-badge><eon-badge tone="success">Ready</eon-badge><eon-badge tone="warning">Review</eon-badge><eon-badge tone="danger">Blocked</eon-badge></div>` }
       ];
-    case 'jarvis-dialog':
+    case 'eon-dialog':
       return [
-        { title: 'Built-in heading and close-first focus', markup: `<jarvis-dialog open label="Confirm action" heading="Delete item" description="Keep built-in heading and description available for quick confirmation flows." initial-focus="close"><p>This action cannot be undone.</p><div slot="footer"><jarvis-button variant="outline">Cancel</jarvis-button><jarvis-button>Delete</jarvis-button></div></jarvis-dialog>` },
-        { title: 'Slotted header and quiet backdrop', markup: `<jarvis-dialog open label="Review request" show-overlay="false" close-on-outside-click="false" size="sm"><div slot="header" style="display:grid;gap:0.35rem;"><strong>Review request</strong><span style="color:var(--jarvis-semantic-text-secondary);font-size:0.92rem;">Use the header slot when the title region needs badges, status, or richer copy.</span></div><p>Dialogs can stay lightweight while still carrying richer decision context.</p><div slot="footer"><jarvis-button variant="outline">Later</jarvis-button><jarvis-button>Approve</jarvis-button></div></jarvis-dialog>` },
-        { title: 'Wide dialog and footer workflow', markup: `<jarvis-dialog open label="Workspace review" heading="Quarterly launch review" description="Wider dialogs work for denser content without jumping all the way to popup or full-screen takeover." size="lg" width="46rem"><div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem;"><div><strong>Summary</strong><p>Confirm launch readiness, owners, and deliverables before publication.</p></div><div><strong>Checks</strong><p>Accessibility, analytics, localization, and legal review are all complete.</p></div></div><div slot="footer"><jarvis-button variant="outline">Request changes</jarvis-button><jarvis-button>Approve launch</jarvis-button></div></jarvis-dialog>` }
+        { title: 'Built-in heading and close-first focus', markup: `<eon-dialog open label="Confirm action" heading="Delete item" description="Keep built-in heading and description available for quick confirmation flows." initial-focus="close"><p>This action cannot be undone.</p><div slot="footer"><eon-button variant="outline">Cancel</eon-button><eon-button>Delete</eon-button></div></eon-dialog>` },
+        { title: 'Slotted header and quiet backdrop', markup: `<eon-dialog open label="Review request" show-overlay="false" close-on-outside-click="false" size="sm"><div slot="header" style="display:grid;gap:0.35rem;"><strong>Review request</strong><span style="color:var(--eon-semantic-text-secondary);font-size:0.92rem;">Use the header slot when the title region needs badges, status, or richer copy.</span></div><p>Dialogs can stay lightweight while still carrying richer decision context.</p><div slot="footer"><eon-button variant="outline">Later</eon-button><eon-button>Approve</eon-button></div></eon-dialog>` },
+        { title: 'Wide dialog and footer workflow', markup: `<eon-dialog open label="Workspace review" heading="Quarterly launch review" description="Wider dialogs work for denser content without jumping all the way to popup or full-screen takeover." size="lg" width="46rem"><div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem;"><div><strong>Summary</strong><p>Confirm launch readiness, owners, and deliverables before publication.</p></div><div><strong>Checks</strong><p>Accessibility, analytics, localization, and legal review are all complete.</p></div></div><div slot="footer"><eon-button variant="outline">Request changes</eon-button><eon-button>Approve launch</eon-button></div></eon-dialog>` }
       ];
-    case 'jarvis-drawer':
+    case 'eon-drawer':
       return [
-        { title: 'Drawer layout', markup: `<jarvis-drawer open side="right" label="Project drawer"><span slot="header">Project details</span><p>Use drawers for secondary detail and contextual actions.</p><div slot="footer"><jarvis-button variant="outline">Close</jarvis-button></div></jarvis-drawer>` }
+        { title: 'Drawer layout', markup: `<eon-drawer open side="right" label="Project drawer"><span slot="header">Project details</span><p>Use drawers for secondary detail and contextual actions.</p><div slot="footer"><eon-button variant="outline">Close</eon-button></div></eon-drawer>` }
       ];
-    case 'jarvis-tabs':
+    case 'eon-tabs':
       return [
-        { title: 'Tab labels', markup: `<jarvis-tabs labels="Overview,Usage,Accessibility"><div>Use tabs to switch related content in place.</div></jarvis-tabs>` }
+        { title: 'Tab labels', markup: `<eon-tabs labels="Overview,Usage,Accessibility"><div>Use tabs to switch related content in place.</div></eon-tabs>` }
       ];
-    case 'jarvis-tab-panel':
+    case 'eon-tab-panel':
       return [
-        { title: 'Left rail and horizontal tab panel', markup: `<div class="grid cards"><jarvis-tab-panel items="Not started,Help needed,In progress,Deferred,Completed" current="2" tab-position="left" show-nav-buttons loop height="24rem" badges="3,1,8,2,0" disabled-tabs="Deferred"></jarvis-tab-panel><jarvis-tab-panel items="Online sales,New website design,Support,Training" current="1" styling-mode="primary" full-width show-nav-buttons badges="12,4,3,1"></jarvis-tab-panel></div>` },
-        { title: 'Readonly flow and hidden task meta', markup: `<div class="grid cards"><jarvis-tab-panel items="Intake,Review,Approval,Archive" current="1" read-only height="22rem" show-task-meta="false" badges="2,5,1,0"></jarvis-tab-panel><jarvis-tab-panel items="Overview,Files,Activity" current="0" disabled-tabs="Files" badges="1,7,3" styling-mode="secondary"></jarvis-tab-panel></div>` }
+        { title: 'Left rail and horizontal tab panel', markup: `<div class="grid cards"><eon-tab-panel items="Not started,Help needed,In progress,Deferred,Completed" current="2" tab-position="left" show-nav-buttons loop height="24rem" badges="3,1,8,2,0" disabled-tabs="Deferred"></eon-tab-panel><eon-tab-panel items="Online sales,New website design,Support,Training" current="1" styling-mode="primary" full-width show-nav-buttons badges="12,4,3,1"></eon-tab-panel></div>` },
+        { title: 'Readonly flow and hidden task meta', markup: `<div class="grid cards"><eon-tab-panel items="Intake,Review,Approval,Archive" current="1" read-only height="22rem" show-task-meta="false" badges="2,5,1,0"></eon-tab-panel><eon-tab-panel items="Overview,Files,Activity" current="0" disabled-tabs="Files" badges="1,7,3" styling-mode="secondary"></eon-tab-panel></div>` }
       ];
-    case 'jarvis-toolbar':
+    case 'eon-toolbar':
       return [
-        { title: 'Toolbar regions', markup: `<div class="grid cards"><jarvis-toolbar dividers aria-description="Workspace command bar"><jarvis-button slot="start" variant="ghost">Back</jarvis-button><jarvis-badge>Live</jarvis-badge><jarvis-button slot="end">Publish</jarvis-button></jarvis-toolbar><jarvis-toolbar density="compact" sticky justify="start" wrap="false" aria-description="Compact sticky toolbar"><jarvis-button slot="start" variant="ghost">Refresh</jarvis-button><jarvis-chip>Compact</jarvis-chip><jarvis-button variant="ghost">Export</jarvis-button><jarvis-button slot="end" variant="outline">Share</jarvis-button></jarvis-toolbar></div>` },
-        { title: 'Centered utility cluster and end-aligned actions', markup: `<div class="grid cards"><jarvis-toolbar justify="center" aria-description="Centered workflow toolbar"><jarvis-button variant="ghost">Preview</jarvis-button><jarvis-button variant="ghost">Compare</jarvis-button><jarvis-button variant="ghost">Inspect</jarvis-button></jarvis-toolbar><jarvis-toolbar justify="end" dividers aria-description="End aligned workspace actions"><jarvis-badge slot="start">Review mode</jarvis-badge><jarvis-button variant="outline">Save draft</jarvis-button><jarvis-button>Approve</jarvis-button></jarvis-toolbar></div>` }
+        { title: 'Toolbar regions', markup: `<div class="grid cards"><eon-toolbar dividers aria-description="Workspace command bar"><eon-button slot="start" variant="ghost">Back</eon-button><eon-badge>Live</eon-badge><eon-button slot="end">Publish</eon-button></eon-toolbar><eon-toolbar density="compact" sticky justify="start" wrap="false" aria-description="Compact sticky toolbar"><eon-button slot="start" variant="ghost">Refresh</eon-button><eon-chip>Compact</eon-chip><eon-button variant="ghost">Export</eon-button><eon-button slot="end" variant="outline">Share</eon-button></eon-toolbar></div>` },
+        { title: 'Centered utility cluster and end-aligned actions', markup: `<div class="grid cards"><eon-toolbar justify="center" aria-description="Centered workflow toolbar"><eon-button variant="ghost">Preview</eon-button><eon-button variant="ghost">Compare</eon-button><eon-button variant="ghost">Inspect</eon-button></eon-toolbar><eon-toolbar justify="end" dividers aria-description="End aligned workspace actions"><eon-badge slot="start">Review mode</eon-badge><eon-button variant="outline">Save draft</eon-button><eon-button>Approve</eon-button></eon-toolbar></div>` }
       ];
-    case 'jarvis-splitter':
+    case 'eon-splitter':
       return [
-        { title: 'Horizontal and vertical split panes', markup: `<div class="grid cards"><jarvis-splitter position="32" step="4" keyboard-resize-step="8" collapsible start-label="Navigation pane" end-label="Editor pane"><jarvis-surface slot="start"><jarvis-stack><strong>Left pane</strong><p>Navigation and filters live here.</p></jarvis-stack></jarvis-surface><jarvis-surface slot="end"><jarvis-stack><strong>Right pane</strong><p>Main content stretches in the remaining area.</p></jarvis-stack></jarvis-surface></jarvis-splitter><jarvis-splitter orientation="vertical" position="48" step="5" keyboard-resize-step="10" start-label="Top workspace" end-label="Bottom workspace"><jarvis-surface slot="start"><strong>Top pane</strong></jarvis-surface><jarvis-surface slot="end"><strong>Bottom pane</strong></jarvis-surface></jarvis-splitter></div>` }
+        { title: 'Horizontal and vertical split panes', markup: `<div class="grid cards"><eon-splitter position="32" step="4" keyboard-resize-step="8" collapsible start-label="Navigation pane" end-label="Editor pane"><eon-surface slot="start"><eon-stack><strong>Left pane</strong><p>Navigation and filters live here.</p></eon-stack></eon-surface><eon-surface slot="end"><eon-stack><strong>Right pane</strong><p>Main content stretches in the remaining area.</p></eon-stack></eon-surface></eon-splitter><eon-splitter orientation="vertical" position="48" step="5" keyboard-resize-step="10" start-label="Top workspace" end-label="Bottom workspace"><eon-surface slot="start"><strong>Top pane</strong></eon-surface><eon-surface slot="end"><strong>Bottom pane</strong></eon-surface></eon-splitter></div>` }
       ];
-    case 'jarvis-resizable':
+    case 'eon-resizable':
       return [
-        { title: 'Resizable cards and ratio lock', markup: `<div class="grid cards"><jarvis-resizable width="420" height="260" handles="right bottom" step="12" show-size-label><jarvis-surface><jarvis-stack><strong>Resizable panel</strong><p>Drag the handles to resize this surface.</p></jarvis-stack></jarvis-surface></jarvis-resizable><jarvis-resizable width="320" height="240" keep-aspect-ratio handles="right bottom" step="10" show-size-label><jarvis-surface><jarvis-stack><strong>Media ratio lock</strong><p>Aspect ratio stays stable while resizing.</p></jarvis-stack></jarvis-surface></jarvis-resizable></div>` },
-        { title: 'Horizontal-only resizing', markup: `<div class="grid cards"><jarvis-resizable width="360" height="220" resize-axis="horizontal" handles="left right" step="16" show-size-label><jarvis-surface><jarvis-stack><strong>Resizable toolbar dock</strong><p>Keyboard arrows and resize handles both respect the horizontal-only constraint.</p></jarvis-stack></jarvis-surface></jarvis-resizable></div>` }
+        { title: 'Resizable cards and ratio lock', markup: `<div class="grid cards"><eon-resizable width="420" height="260" handles="right bottom" step="12" show-size-label><eon-surface><eon-stack><strong>Resizable panel</strong><p>Drag the handles to resize this surface.</p></eon-stack></eon-surface></eon-resizable><eon-resizable width="320" height="240" keep-aspect-ratio handles="right bottom" step="10" show-size-label><eon-surface><eon-stack><strong>Media ratio lock</strong><p>Aspect ratio stays stable while resizing.</p></eon-stack></eon-surface></eon-resizable></div>` },
+        { title: 'Horizontal-only resizing', markup: `<div class="grid cards"><eon-resizable width="360" height="220" resize-axis="horizontal" handles="left right" step="16" show-size-label><eon-surface><eon-stack><strong>Resizable toolbar dock</strong><p>Keyboard arrows and resize handles both respect the horizontal-only constraint.</p></eon-stack></eon-surface></eon-resizable></div>` }
       ];
-    case 'jarvis-surface':
+    case 'eon-surface':
       return [
-        { title: 'Surface levels', markup: `<div class="grid cards"><jarvis-surface>Default surface</jarvis-surface><jarvis-surface elevated>Elevated surface</jarvis-surface></div>` }
+        { title: 'Surface levels', markup: `<div class="grid cards"><eon-surface>Default surface</eon-surface><eon-surface elevated>Elevated surface</eon-surface></div>` }
       ];
-    case 'jarvis-section':
+    case 'eon-section':
       return [
-        { title: 'Section shell', markup: `<jarvis-section heading="Team settings" description="Keep related controls grouped with a clear title."><jarvis-button slot="actions" variant="outline">Manage</jarvis-button><jarvis-stack><jarvis-input label="Workspace name"></jarvis-input><jarvis-switch label="Enable alerts"></jarvis-switch></jarvis-stack></jarvis-section>` }
+        { title: 'Section shell', markup: `<eon-section heading="Team settings" description="Keep related controls grouped with a clear title."><eon-button slot="actions" variant="outline">Manage</eon-button><eon-stack><eon-input label="Workspace name"></eon-input><eon-switch label="Enable alerts"></eon-switch></eon-stack></eon-section>` }
       ];
-    case 'jarvis-pagination':
+    case 'eon-pagination':
       return [
-        { title: 'Navigation states', markup: `<div class="pill-row"><jarvis-pagination page="1" total="8"></jarvis-pagination><jarvis-pagination page="4" total="8"></jarvis-pagination><jarvis-pagination page="8" total="8"></jarvis-pagination></div>` }
+        { title: 'Navigation states', markup: `<div class="pill-row"><eon-pagination page="1" total="8"></eon-pagination><eon-pagination page="4" total="8"></eon-pagination><eon-pagination page="8" total="8"></eon-pagination></div>` }
       ];
-    case 'jarvis-spinner':
+    case 'eon-spinner':
       return [
-        { title: 'Default and labeled loading', markup: `<div class="grid cards"><jarvis-spinner></jarvis-spinner><jarvis-spinner label="Syncing workspace"></jarvis-spinner></div>` },
-        { title: 'Loading in status flows', markup: `<div class="grid cards"><jarvis-stack gap="0.85rem" align="start"><jarvis-spinner label="Uploading"></jarvis-spinner><p>Use spinners where work is expected to continue for a moment.</p></jarvis-stack><jarvis-load-indicator label="Fetching latest spec version"></jarvis-load-indicator></div>` }
+        { title: 'Default and labeled loading', markup: `<div class="grid cards"><eon-spinner></eon-spinner><eon-spinner label="Syncing workspace"></eon-spinner></div>` },
+        { title: 'Loading in status flows', markup: `<div class="grid cards"><eon-stack gap="0.85rem" align="start"><eon-spinner label="Uploading"></eon-spinner><p>Use spinners where work is expected to continue for a moment.</p></eon-stack><eon-load-indicator label="Fetching latest spec version"></eon-load-indicator></div>` }
       ];
-    case 'jarvis-skeleton':
+    case 'eon-skeleton':
       return [
-        { title: 'Text placeholder chain', markup: `<div class="grid cards"><jarvis-skeleton width="62%" height="1.4rem"></jarvis-skeleton><jarvis-skeleton width="87%" height="1rem"></jarvis-skeleton><jarvis-skeleton width="72%" height="1rem"></jarvis-skeleton><jarvis-skeleton width="55%" height="0.9rem"></jarvis-skeleton></div>` },
-        { title: 'Profile card loading skeleton', markup: `<div class="grid cards"><jarvis-surface><jarvis-stack direction="horizontal" align="center" gap="0.75rem"><jarvis-skeleton width="4rem" height="4rem" radius="50%"></jarvis-skeleton><jarvis-stack><jarvis-skeleton width="9rem" height="1.05rem"></jarvis-skeleton><jarvis-skeleton width="12rem" height="0.9rem"></jarvis-skeleton><jarvis-skeleton width="8rem" height="0.8rem"></jarvis-skeleton></jarvis-stack></jarvis-stack><jarvis-skeleton width="100%" height="4.75rem" radius="0.6rem"></jarvis-skeleton></jarvis-surface></div>` },
+        { title: 'Text placeholder chain', markup: `<div class="grid cards"><eon-skeleton width="62%" height="1.4rem"></eon-skeleton><eon-skeleton width="87%" height="1rem"></eon-skeleton><eon-skeleton width="72%" height="1rem"></eon-skeleton><eon-skeleton width="55%" height="0.9rem"></eon-skeleton></div>` },
+        { title: 'Profile card loading skeleton', markup: `<div class="grid cards"><eon-surface><eon-stack direction="horizontal" align="center" gap="0.75rem"><eon-skeleton width="4rem" height="4rem" radius="50%"></eon-skeleton><eon-stack><eon-skeleton width="9rem" height="1.05rem"></eon-skeleton><eon-skeleton width="12rem" height="0.9rem"></eon-skeleton><eon-skeleton width="8rem" height="0.8rem"></eon-skeleton></eon-stack></eon-stack><eon-skeleton width="100%" height="4.75rem" radius="0.6rem"></eon-skeleton></eon-surface></div>` },
       ];
-    case 'jarvis-toast':
+    case 'eon-toast':
       return [
-        { title: 'Inline notification tones and dismiss actions', markup: `<div class="grid cards"><jarvis-toast tone="success" heading="Saved" icon="check" show-close-button show-timestamp density="compact">All changes are live.</jarvis-toast><jarvis-toast tone="warning" heading="Heads up" show-close-button show-timestamp timestamp="2:14 PM">Review the latest moderation queue.</jarvis-toast><jarvis-toast tone="danger" heading="Error" polite="assertive" show-close-button show-timestamp timestamp="2:16 PM">We could not save your changes.</jarvis-toast></div>` },
-        { title: 'Auto-hide progress and stacked presets', markup: `<div class="grid cards"><jarvis-toast heading="Deployment scheduled" duration="4000" show-progress-bar pause-on-hover show-close-button show-timestamp density="compact"><span slot="actions"><jarvis-button size="sm" variant="ghost">Undo</jarvis-button></span>Production rollout begins in 5 minutes.</jarvis-toast><div style="display:grid;gap:0.75rem;"><jarvis-toast tone="neutral" position="inline" stack-index="0" show-icon density="compact">Top-left, top-center, and top-right positions are available for global stacks.</jarvis-toast><jarvis-toast tone="success" position="inline" stack-index="1" show-icon density="compact">Bottom-left, bottom-center, and bottom-right are also supported.</jarvis-toast></div></div>` }
+        { title: 'Inline notification tones and dismiss actions', markup: `<div class="grid cards"><eon-toast tone="success" heading="Saved" icon="check" show-close-button show-timestamp density="compact">All changes are live.</eon-toast><eon-toast tone="warning" heading="Heads up" show-close-button show-timestamp timestamp="2:14 PM">Review the latest moderation queue.</eon-toast><eon-toast tone="danger" heading="Error" polite="assertive" show-close-button show-timestamp timestamp="2:16 PM">We could not save your changes.</eon-toast></div>` },
+        { title: 'Auto-hide progress and stacked presets', markup: `<div class="grid cards"><eon-toast heading="Deployment scheduled" duration="4000" show-progress-bar pause-on-hover show-close-button show-timestamp density="compact"><span slot="actions"><eon-button size="sm" variant="ghost">Undo</eon-button></span>Production rollout begins in 5 minutes.</eon-toast><div style="display:grid;gap:0.75rem;"><eon-toast tone="neutral" position="inline" stack-index="0" show-icon density="compact">Top-left, top-center, and top-right positions are available for global stacks.</eon-toast><eon-toast tone="success" position="inline" stack-index="1" show-icon density="compact">Bottom-left, bottom-center, and bottom-right are also supported.</eon-toast></div></div>` }
       ];
-    case 'jarvis-file-manager':
+    case 'eon-file-manager':
       return [
-        { title: 'Widescreen asset browser', markup: `<jarvis-file-manager current-path="Files/Widescreen"></jarvis-file-manager>` },
-        { title: 'Search, preview, and bulk selection', markup: `<jarvis-file-manager current-path="Files/Widescreen" show-search search-placeholder="Search assets" show-preview selection-mode="multiple" allow-rename allow-delete></jarvis-file-manager>` },
-        { title: 'Inline file actions and workspace flow', markup: `<jarvis-file-manager current-path="Files/Widescreen" show-search search-placeholder="Search assets" show-preview selection-mode="multiple" allow-create allow-upload allow-rename allow-delete></jarvis-file-manager>` }
+        { title: 'Widescreen asset browser', markup: `<eon-file-manager current-path="Files/Widescreen"></eon-file-manager>` },
+        { title: 'Search, preview, and bulk selection', markup: `<eon-file-manager current-path="Files/Widescreen" show-search search-placeholder="Search assets" show-preview selection-mode="multiple" allow-rename allow-delete></eon-file-manager>` },
+        { title: 'Inline file actions and workspace flow', markup: `<eon-file-manager current-path="Files/Widescreen" show-search search-placeholder="Search assets" show-preview selection-mode="multiple" allow-create allow-upload allow-rename allow-delete></eon-file-manager>` }
       ];
-    case 'jarvis-html-editor':
+    case 'eon-html-editor':
       return [
-        { title: 'Editorial document', markup: `<jarvis-html-editor></jarvis-html-editor>` },
-        { title: 'Minimal toolbar and source mode', markup: `<jarvis-html-editor show-word-count show-source-toggle toolbar-preset="minimal"></jarvis-html-editor>` },
-        { title: 'Full authoring toolbar with blocks and callouts', markup: `<jarvis-html-editor show-word-count show-source-toggle toolbar-preset="full"></jarvis-html-editor>` }
+        { title: 'Editorial document', markup: `<eon-html-editor></eon-html-editor>` },
+        { title: 'Minimal toolbar and source mode', markup: `<eon-html-editor show-word-count show-source-toggle toolbar-preset="minimal"></eon-html-editor>` },
+        { title: 'Full authoring toolbar with blocks and callouts', markup: `<eon-html-editor show-word-count show-source-toggle toolbar-preset="full"></eon-html-editor>` }
       ];
-    case 'jarvis-range-selector':
+    case 'eon-range-selector':
       return [
-        { title: 'House price range', markup: `<jarvis-range-selector heading="Select house price range"></jarvis-range-selector>` },
-        { title: 'Plan tiers', markup: `<jarvis-range-selector heading="Select budget envelope" min="500" max="5000" start="1200" end="3600" format="number" ticks="500|Starter;1500|Growth;2500|Scale;3500|Advanced;5000|Enterprise"></jarvis-range-selector>` },
-        { title: 'Readonly and stepped planning range', markup: `<div class="grid cards"><jarvis-range-selector heading="Quarterly planning band" min="0" max="100" start="25" end="65" format="number" step="5" min-range="10" max-range="50"></jarvis-range-selector><jarvis-range-selector heading="Locked approved range" min="0" max="100" start="40" end="70" format="number" read-only show-value-labels="false"></jarvis-range-selector></div>` }
+        { title: 'House price range', markup: `<eon-range-selector heading="Select house price range"></eon-range-selector>` },
+        { title: 'Plan tiers', markup: `<eon-range-selector heading="Select budget envelope" min="500" max="5000" start="1200" end="3600" format="number" ticks="500|Starter;1500|Growth;2500|Scale;3500|Advanced;5000|Enterprise"></eon-range-selector>` },
+        { title: 'Readonly and stepped planning range', markup: `<div class="grid cards"><eon-range-selector heading="Quarterly planning band" min="0" max="100" start="25" end="65" format="number" step="5" min-range="10" max-range="50"></eon-range-selector><eon-range-selector heading="Locked approved range" min="0" max="100" start="40" end="70" format="number" read-only show-value-labels="false"></eon-range-selector></div>` }
       ];
-    case 'jarvis-vector-map':
+    case 'eon-vector-map':
       return [
-        { title: 'Nominal GDP overview', markup: `<jarvis-vector-map></jarvis-vector-map>` },
-        { title: 'Compact analytics and legend tuning', markup: `<div class="grid cards"><jarvis-vector-map legend-title="GDP bands" value-format="compact" legend-mode="top-regions"></jarvis-vector-map><jarvis-vector-map show-controls="false" show-labels="false" value-format="currency" legend-title="Regional totals" show-routes="false"></jarvis-vector-map></div>` },
-        { title: 'Markers, routes, and ranked legend', markup: `<div class="grid cards"><jarvis-vector-map legend-title="Top regions" legend-mode="top-regions" value-format="compact" markers="Toronto|170|160;London|452|170;Shanghai|720|262;Sydney|810|446;Bengaluru|704|350" routes="Atlantic corridor|170|160|452|170;Growth route|452|170|720|262;Pacific route|720|262|810|446;India expansion|720|262|704|350"></jarvis-vector-map></div>` }
+        { title: 'Nominal GDP overview', markup: `<eon-vector-map></eon-vector-map>` },
+        { title: 'Compact analytics and legend tuning', markup: `<div class="grid cards"><eon-vector-map legend-title="GDP bands" value-format="compact" legend-mode="top-regions"></eon-vector-map><eon-vector-map show-controls="false" show-labels="false" value-format="currency" legend-title="Regional totals" show-routes="false"></eon-vector-map></div>` },
+        { title: 'Markers, routes, and ranked legend', markup: `<div class="grid cards"><eon-vector-map legend-title="Top regions" legend-mode="top-regions" value-format="compact" markers="Toronto|170|160;London|452|170;Shanghai|720|262;Sydney|810|446;Bengaluru|704|350" routes="Atlantic corridor|170|160|452|170;Growth route|452|170|720|262;Pacific route|720|262|810|446;India expansion|720|262|704|350"></eon-vector-map></div>` }
       ];
     default:
       return [
@@ -1427,7 +1443,7 @@ function createVariantGallery(component: ComponentManifestEntry): Array<{ title:
 
 async function loadManifestData(): Promise<LibraryManifest> {
   try {
-    const raw = await readFile(resolve(process.cwd(), '../../packages/jarvis-manifest/generated/library.manifest.json'), 'utf8');
+    const raw = await readFile(resolve(process.cwd(), '../../packages/eon-manifest/generated/library.manifest.json'), 'utf8');
     return JSON.parse(raw) as LibraryManifest;
   } catch {
     return {
@@ -1444,6 +1460,28 @@ function layout(title: string, body: string, data: LibraryManifest, activePath =
       const path = `/guides/${page.slug}`;
       const isActive = path === activePath;
       return `<li><a class="nav-item${isActive ? ' is-active' : ''}" href="${path}">${escapeHtml(page.title)}</a></li>`;
+    })
+    .join('');
+  const productLinks = [
+    {
+      path: '/tool-taxonomy',
+      label: 'Tool taxonomy',
+      searchTarget: 'tool taxonomy categories generators calculators checklists references implementation plan'
+    },
+    {
+      path: '/career-tools',
+      label: 'Career tools',
+      searchTarget: 'career tools jobs resumes ats cover letters interviews salaries'
+    },
+    {
+      path: '/career-tools/ats-checker',
+      label: 'ATS checker prototype',
+      searchTarget: 'ats checker resume job description keyword gaps prototype'
+    }
+  ]
+    .map((link) => {
+      const isActive = link.path === activePath;
+      return `<li><a class="nav-item${isActive ? ' is-active' : ''}" href="${link.path}" data-search-target="${escapeHtml(link.searchTarget)}">${escapeHtml(link.label)}</a></li>`;
     })
     .join('');
   const playgroundActive = activePath === '/playground' ? ' class="is-active"' : '';
@@ -1475,47 +1513,56 @@ function layout(title: string, body: string, data: LibraryManifest, activePath =
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>${escapeHtml(title)} | Jarvis UI</title>
-    <link rel="stylesheet" href="/jarvis-dist/jarvis/jarvis.css" />
+    <title>${escapeHtml(title)} | Eon UI</title>
+    <link rel="stylesheet" href="/eon-dist/Eon/Eon.css" />
     <script type="module">
-      import { defineCustomElements } from '/jarvis-dist/loader/index.js';
+      import { defineCustomElements } from '/eon-dist/loader/index.js';
       defineCustomElements();
     </script>
     <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.49.0/min/vs/loader.js" crossorigin="anonymous"></script>
     <style>${themeBundleCss}</style>
     <style>
       :root {
-        --bg: var(--jarvis-semantic-surface-canvas);
-        --surface: var(--jarvis-semantic-surface-elevated);
-        --surface-strong: var(--jarvis-semantic-surface-raised);
-        --surface-subtle: var(--jarvis-semantic-surface-sunken);
-        --border: var(--jarvis-semantic-border-default);
-        --border-strong: var(--jarvis-semantic-border-strong);
-        --text: var(--jarvis-semantic-text-primary);
-        --text-subtle: var(--jarvis-semantic-text-secondary);
-        --accent: var(--jarvis-semantic-action-primaryBg);
-        --accent-soft: color-mix(in srgb, var(--jarvis-semantic-action-primaryBg) 12%, transparent);
-        --accent-ink: var(--jarvis-semantic-action-primaryBgHover);
-        --accent-glow: var(--jarvis-semantic-action-glow);
-        --shadow-soft: var(--jarvis-semantic-shadow-soft);
-        --shadow-elevated: var(--jarvis-semantic-shadow-elevated);
-        --motion-ui: var(--jarvis-semantic-motion-ui);
-        --motion-complex: var(--jarvis-semantic-motion-complex);
-        --motion-ease: var(--jarvis-semantic-motion-ease);
+        --bg: var(--eon-semantic-surface-canvas);
+        --surface: var(--eon-semantic-surface-elevated);
+        --surface-strong: var(--eon-semantic-surface-raised);
+        --surface-subtle: var(--eon-semantic-surface-sunken);
+        --border: var(--eon-semantic-border-default);
+        --border-strong: var(--eon-semantic-border-strong);
+        --text: var(--eon-semantic-text-primary);
+        --text-subtle: var(--eon-semantic-text-secondary);
+        --accent: var(--eon-semantic-action-primaryBg);
+        --accent-soft: color-mix(in srgb, var(--eon-semantic-action-primaryBg) 12%, transparent);
+        --accent-ink: var(--eon-semantic-action-primaryBgHover);
+        --accent-glow: var(--eon-semantic-action-glow);
+        --shadow-soft: var(--eon-semantic-shadow-soft);
+        --shadow-elevated: var(--eon-semantic-shadow-elevated);
+        --motion-ui: var(--eon-semantic-motion-ui);
+        --motion-complex: var(--eon-semantic-motion-complex);
+        --motion-ease: var(--eon-semantic-motion-ease);
       }
       * { box-sizing: border-box; }
       body {
-        font-family: var(--jarvis-base-font-family-sans);
+        font-family: var(--eon-base-font-family-sans);
         margin: 0;
         background:
-          radial-gradient(circle at top left, color-mix(in srgb, var(--jarvis-semantic-action-primaryBg) 12%, transparent), transparent 28%),
-          radial-gradient(circle at 80% 0%, color-mix(in srgb, var(--jarvis-semantic-text-secondary) 10%, transparent), transparent 24%),
+          radial-gradient(circle at top left, color-mix(in srgb, var(--eon-semantic-action-primaryBg) 12%, transparent), transparent 28%),
+          radial-gradient(circle at 80% 0%, color-mix(in srgb, var(--eon-semantic-text-secondary) 10%, transparent), transparent 24%),
           linear-gradient(180deg, #fbfcff 0%, var(--bg) 100%);
         color: var(--text);
       }
       a { color: inherit; }
-      code { background: #edf2f7; padding: 0.125rem 0.35rem; border-radius: 0.35rem; }
+      code:not(pre code) { background: #edf2f7; padding: 0.125rem 0.35rem; border-radius: 0.35rem; }
       pre { margin: 0; overflow: auto; background: linear-gradient(180deg, #111827 0%, #0b1220 100%); color: #eff6ff; padding: 1rem; border-radius: 1rem; box-shadow: inset 0 1px 0 rgba(255,255,255,0.04); }
+      pre code {
+        display: block;
+        background: transparent;
+        color: inherit;
+        padding: 0;
+        border-radius: 0;
+        font: 500 0.93rem/1.6 "JetBrains Mono", "Cascadia Code", monospace;
+        white-space: pre;
+      }
       table { width: 100%; border-collapse: collapse; margin-top: 0.75rem; }
       th, td { padding: 0.85rem 0.75rem; border-top: 1px solid #e7ebf0; text-align: left; vertical-align: top; }
       .shell { display: grid; grid-template-columns: 19rem minmax(0, 1fr); min-height: 100vh; }
@@ -1876,6 +1923,10 @@ function layout(title: string, body: string, data: LibraryManifest, activePath =
         margin: 0;
         border-radius: 0;
         background: transparent;
+        padding: 1.15rem 1.2rem;
+        color: #eff6ff;
+        font: 500 0.93rem/1.6 "JetBrains Mono", "Cascadia Code", monospace;
+        white-space: pre;
         max-height: 24rem;
         overflow: auto;
       }
@@ -1939,10 +1990,10 @@ function layout(title: string, body: string, data: LibraryManifest, activePath =
         .panel,
         .card-link,
         .option-card {
-          animation: jarvis-docs-fade-up 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
+          animation: eon-docs-fade-up 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
         }
       }
-      @keyframes jarvis-docs-fade-up {
+      @keyframes eon-docs-fade-up {
         from { opacity: 0; transform: translateY(10px) scale(0.985); }
         to { opacity: 1; transform: translateY(0) scale(1); }
       }
@@ -1962,7 +2013,7 @@ function layout(title: string, body: string, data: LibraryManifest, activePath =
     <div class="shell">
       <aside class="sidebar">
         <div class="brand">
-          <a href="/"><strong>Jarvis UI</strong></a>
+          <a href="/"><strong>Eon UI</strong></a>
           <span>Cross-framework components, tokens, AI metadata, and Mystique charting.</span>
         </div>
         <div class="nav-search-wrap">
@@ -1971,6 +2022,8 @@ function layout(title: string, body: string, data: LibraryManifest, activePath =
         </div>
         <h2>Foundations</h2>
         <ul>${guideLinks}</ul>
+        <h2>Explorations</h2>
+        <section class="nav-group"><ul>${productLinks}</ul></section>
         <h2>Playground</h2>
         <ul><li><a href="/playground"${playgroundActive}>Interactive playground</a></li></ul>
         <h2>Components</h2>
@@ -1984,7 +2037,7 @@ function layout(title: string, body: string, data: LibraryManifest, activePath =
           <div>
             <p class="eyebrow">Theme lab</p>
             <h2 style="margin-bottom:0.2rem;">Switch design language live</h2>
-            <p class="quiet">Use DevExpress-style base themes to compare the same Jarvis component across Generic, Material, and Fluent foundations.</p>
+            <p class="quiet">Use DevExpress-style base themes to compare the same Eon component across Generic, Material, and Fluent foundations.</p>
           </div>
           <div class="toolbar-groups">
             <div class="toolbar-group">
@@ -2014,9 +2067,9 @@ function layout(title: string, body: string, data: LibraryManifest, activePath =
       (() => {
         const root = document.documentElement;
         const storageKeys = {
-          family: 'jarvis-docs-theme-family',
-          theme: 'jarvis-docs-theme',
-          density: 'jarvis-docs-density'
+          family: 'eon-docs-theme-family',
+          theme: 'eon-docs-theme',
+          density: 'eon-docs-density'
         };
 
         const familySelect = document.querySelector('[data-theme-family-switcher]');
@@ -2047,7 +2100,7 @@ function layout(title: string, body: string, data: LibraryManifest, activePath =
           const query = searchInput.value.trim().toLowerCase();
           let visibleCount = 0;
 
-          document.querySelectorAll('[data-component-nav],[href^="/charts/"],[href^="/guides/"],[href="/playground"]').forEach((node) => {
+          document.querySelectorAll('[data-component-nav],[href^="/charts/"],[href^="/guides/"],[href^="/career-tools"],[href^="/tool-taxonomy"],[href="/playground"]').forEach((node) => {
             if (!(node instanceof HTMLAnchorElement)) {
               return;
             }
@@ -2606,8 +2659,8 @@ function renderHome(data: LibraryManifest): string {
     'Home',
     `<section class="hero">
       <p class="eyebrow">Design system website</p>
-      <h1>Build with Jarvis UI and Mystique charts</h1>
-      <p>Jarvis UI provides token-driven Web Components with framework wrappers, manifest-backed docs, and AI-safe metadata. Mystique provides standards-aligned charting primitives designed to match the same system.</p>
+      <h1>Build with Eon UI and Mystique charts</h1>
+      <p>Eon UI provides token-driven Web Components with framework wrappers, manifest-backed docs, and AI-safe metadata. Mystique provides standards-aligned charting primitives designed to match the same system.</p>
       <div class="hero-stats">
         <span>${data.components.length} components</span>
         <span>${data.charts.length} chart types</span>
@@ -2624,6 +2677,32 @@ function renderHome(data: LibraryManifest): string {
       </div>
       <div class="grid cards">
         ${guidePages.map((page) => `<a class="card-link" href="/guides/${page.slug}"><span class="label">Guide</span><strong>${escapeHtml(page.title)}</strong><p class="quiet">${escapeHtml(page.summary)}</p></a>`).join('')}
+      </div>
+    </section>
+    <section class="panel">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Explorations</p>
+          <h2>Product strategy prototypes</h2>
+          <p>These pages turn category ideas into reviewable product artifacts instead of leaving them as notes.</p>
+        </div>
+      </div>
+      <div class="grid cards">
+        <a class="card-link" href="/tool-taxonomy">
+          <span class="label">Master plan</span>
+          <strong>Tool taxonomy</strong>
+          <p class="quiet">Browse 18 categories, shared engines, reference products, and a large initial backlog we can build from.</p>
+        </a>
+        <a class="card-link" href="/career-tools">
+          <span class="label">Career tools</span>
+          <strong>Job application workflow hub</strong>
+          <p class="quiet">Map ATS checks, resume rewrites, cover letters, interview prep, and role pages into one launch plan.</p>
+        </a>
+        <a class="card-link" href="/career-tools/ats-checker">
+          <span class="label">Prototype</span>
+          <strong>ATS checker</strong>
+          <p class="quiet">Try the core traction loop with a simple resume-versus-job-description match experience.</p>
+        </a>
       </div>
     </section>
     <section class="panel">
@@ -2691,7 +2770,7 @@ function renderGuide(slug: string, data: LibraryManifest): string {
                   <p><strong>Events:</strong> ${renderInlineCodes(framework.notes.events)}</p>
                   <p><strong>Forms:</strong> ${framework.notes.forms}</p>
                   <p><strong>SSR:</strong> ${framework.notes.ssr}</p>
-                  <pre><code>${framework.example.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</code></pre>
+                  <pre>${framework.example.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</pre>
                 </article>
               `;
               }
@@ -2755,6 +2834,593 @@ function renderGuide(slug: string, data: LibraryManifest): string {
     ${tokenSection}
     ${sharedGuideSection}`,
     data
+  );
+}
+
+function renderCareerHub(data: LibraryManifest): string {
+  const shipNow = careerToolTracks.filter((track) => track.status === 'now');
+  const shipNext = careerToolTracks.filter((track) => track.status === 'next');
+  const shipLater = careerToolTracks.filter((track) => track.status === 'later');
+
+  return layout(
+    'Career Tools',
+    `<section class="hero">
+      <p class="eyebrow">Career tools strategy</p>
+      <h1>Build the category around one repeated job-seeker workflow</h1>
+      <p>The strongest version of this category is not a generic score page. It is a connected workflow that starts with ATS matching, exposes missing evidence, and then offers the next practical step for the same application.</p>
+      <div class="hero-stats">
+        <span>${careerToolTracks.length} tool tracks</span>
+        <span>${careerRoleLandingPages.length} role pages</span>
+        <span>${careerLaunchPhases.length} release phases</span>
+        <span><a href="/career-tools/ats-checker">Open ATS prototype</a></span>
+      </div>
+    </section>
+    <section class="panel">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Core workflow</p>
+          <h2>Use one chain of actions to get traction</h2>
+          <p>Every tool should naturally lead to the next one so visitors do not have to guess what to do after the first score.</p>
+        </div>
+      </div>
+      <div class="mini-grid">
+        ${careerCoreWorkflow.map((step, index) => `<article class="option-card"><strong>Step ${index + 1}</strong><p>${escapeHtml(step)}</p></article>`).join('')}
+      </div>
+    </section>
+    <section class="panel">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Release ordering</p>
+          <h2>Ship the highest-intent tools first</h2>
+          <p>The first batch should improve active applications. The next batch should improve conversion. The last batch should focus on retention and monetization.</p>
+        </div>
+      </div>
+      <div class="split">
+        <article class="option-card">
+          <strong>Ship now</strong>
+          ${renderRows(shipNow.map((track) => `${track.name}: ${track.summary}`), 'No immediate launches set.')}
+        </article>
+        <article class="option-card">
+          <strong>Ship next</strong>
+          ${renderRows(shipNext.map((track) => `${track.name}: ${track.summary}`), 'No follow-up launches set.')}
+        </article>
+        <article class="option-card">
+          <strong>Ship later</strong>
+          ${renderRows(shipLater.map((track) => `${track.name}: ${track.summary}`), 'No later launches set.')}
+        </article>
+      </div>
+    </section>
+    <section class="panel">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Tool lineup</p>
+          <h2>Each tool needs a traction story and a clear MVP</h2>
+          <p>These cards keep the category grounded in what users actually want and what we can ship in useful slices.</p>
+        </div>
+      </div>
+      <div class="grid cards">
+        ${careerToolTracks
+          .map((track) => {
+            const actionHref = track.slug === 'ats-match-checker' ? '/career-tools/ats-checker' : `/career-tools#${track.slug}`;
+            return `<a class="card-link" href="${actionHref}" id="${track.slug}">
+              <span class="label">${escapeHtml(track.status)}</span>
+              <strong>${escapeHtml(track.name)}</strong>
+              <p class="quiet">${escapeHtml(track.summary)}</p>
+              <p><strong>Traction:</strong> ${escapeHtml(track.tractionAngle)}</p>
+              <p><strong>Audience:</strong> ${escapeHtml(track.audience.join(', '))}</p>
+              <p><strong>MVP:</strong> ${escapeHtml(track.mvp.join(', '))}</p>
+            </a>`;
+          })
+          .join('')}
+      </div>
+    </section>
+    <section class="panel">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Role landing pages</p>
+          <h2>Keep the engine centralized and tailor the message by role</h2>
+          <p>This is the cleaner path than creating many separate sites for the same underlying workflow.</p>
+        </div>
+      </div>
+      <div class="grid cards">
+        ${careerRoleLandingPages
+          .map(
+            (rolePage) => `<article class="card-link">
+              <span class="label">Role page</span>
+              <strong>${escapeHtml(rolePage.role)}</strong>
+              <p class="quiet">Suggested path: <code>/career-tools/${escapeHtml(rolePage.slug)}</code></p>
+              <p>${escapeHtml(rolePage.angle)}</p>
+            </article>`
+          )
+          .join('')}
+      </div>
+    </section>
+    <section class="panel">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Phased rollout</p>
+          <h2>Three launches keep the scope disciplined</h2>
+          <p>This lets us start with the job-application core and add the rest without turning the category into an unbounded build.</p>
+        </div>
+      </div>
+      <div class="split">
+        ${careerLaunchPhases
+          .map(
+            (phase) => `<article class="option-card">
+              <strong>${escapeHtml(phase.name)}</strong>
+              <p>${escapeHtml(phase.summary)}</p>
+              ${renderRows(phase.deliverables.slice(), 'No deliverables listed.')}
+            </article>`
+          )
+          .join('')}
+      </div>
+    </section>`,
+    data,
+    '/career-tools'
+  );
+}
+
+function renderCareerAtsChecker(data: LibraryManifest): string {
+  return layout(
+    'ATS Checker Prototype',
+    `<style>
+      .ats-shell {
+        display: grid;
+        gap: 1rem;
+      }
+      .ats-input-grid,
+      .ats-results {
+        display: grid;
+        gap: 1rem;
+        grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+      }
+      .ats-field {
+        display: grid;
+        gap: 0.5rem;
+      }
+      .ats-field label {
+        font-weight: 700;
+      }
+      .ats-field textarea {
+        min-height: 17rem;
+        width: 100%;
+        border-radius: 1rem;
+        border: 1px solid var(--border);
+        background: var(--surface);
+        color: var(--text);
+        padding: 1rem;
+        font: inherit;
+        resize: vertical;
+        box-shadow: var(--shadow-soft);
+      }
+      .ats-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+      }
+      .ats-score {
+        font-size: clamp(2.4rem, 6vw, 4rem);
+        line-height: 1;
+        font-weight: 800;
+        letter-spacing: -0.06em;
+      }
+      .ats-summary {
+        color: var(--text-subtle);
+        margin: 0;
+      }
+      .ats-list {
+        margin: 0;
+        padding-left: 1.15rem;
+        display: grid;
+        gap: 0.45rem;
+      }
+      .ats-chip-row {
+        display: flex;
+        gap: 0.45rem;
+        flex-wrap: wrap;
+      }
+      .ats-chip {
+        display: inline-flex;
+        align-items: center;
+        border-radius: 999px;
+        padding: 0.35rem 0.7rem;
+        background: var(--accent-soft);
+        color: var(--accent-ink);
+        font-size: 0.92rem;
+        font-weight: 600;
+      }
+    </style>
+    <section class="hero">
+      <p class="eyebrow">Career tools prototype</p>
+      <h1>ATS match checker</h1>
+      <p>This is the core traction hook for the category: compare a resume with a specific job description, show the overlap, and point to the next edits the user should make before applying.</p>
+      <div class="hero-stats">
+        <span>Client-side prototype</span>
+        <span>Keyword overlap</span>
+        <span>Gap analysis</span>
+        <span><a href="/career-tools">Back to the full hub</a></span>
+      </div>
+    </section>
+    <section class="panel ats-shell">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Try the workflow</p>
+          <h2>Paste a resume and a job description</h2>
+          <p>Use your own text or load the built-in sample. This version stays intentionally lightweight and runs fully in the browser.</p>
+        </div>
+      </div>
+      <div class="ats-input-grid">
+        <div class="ats-field">
+          <label for="ats-resume">Resume</label>
+          <textarea id="ats-resume" data-ats-resume placeholder="Paste resume text here"></textarea>
+        </div>
+        <div class="ats-field">
+          <label for="ats-job">Job description</label>
+          <textarea id="ats-job" data-ats-job placeholder="Paste job description text here"></textarea>
+        </div>
+      </div>
+      <div class="ats-actions">
+        <button class="toolbar-button" type="button" data-ats-run>Analyze match</button>
+        <button class="toolbar-button" type="button" data-ats-sample>Load sample content</button>
+      </div>
+    </section>
+    <section class="ats-results">
+      <article class="panel">
+        <p class="eyebrow">Score</p>
+        <div class="ats-score" data-ats-score>--</div>
+        <p class="ats-summary" data-ats-summary>Run the checker to see how closely the resume matches the job.</p>
+      </article>
+      <article class="panel">
+        <p class="eyebrow">Matched strengths</p>
+        <div class="ats-chip-row" data-ats-strengths></div>
+      </article>
+      <article class="panel">
+        <p class="eyebrow">Missing or weak terms</p>
+        <div class="ats-chip-row" data-ats-missing></div>
+      </article>
+    </section>
+    <section class="panel">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Next steps</p>
+          <h2>Turn the analysis into edits</h2>
+        </div>
+      </div>
+      <ol class="ats-list" data-ats-next-steps>
+        <li>Paste a resume and job description, then run the checker.</li>
+        <li>Use the missing terms list to decide which evidence or keywords should be added.</li>
+        <li>Rewrite at least two bullets so they show outcomes, metrics, and the matched role language.</li>
+      </ol>
+    </section>
+    <script>
+      (() => {
+        const resumeEl = document.querySelector('[data-ats-resume]');
+        const jobEl = document.querySelector('[data-ats-job]');
+        const runEl = document.querySelector('[data-ats-run]');
+        const sampleEl = document.querySelector('[data-ats-sample]');
+        const scoreEl = document.querySelector('[data-ats-score]');
+        const summaryEl = document.querySelector('[data-ats-summary]');
+        const strengthsEl = document.querySelector('[data-ats-strengths]');
+        const missingEl = document.querySelector('[data-ats-missing]');
+        const nextStepsEl = document.querySelector('[data-ats-next-steps]');
+
+        const sampleResume = [
+          'Software Engineer with 4 years of experience building React and TypeScript applications.',
+          'Built internal dashboards with React, Redux Toolkit, Node.js, Express, and PostgreSQL.',
+          'Collaborated with product and design partners to launch workflow improvements that reduced support tickets by 18%.',
+          'Improved page performance through code splitting, lazy loading, and bundle analysis.',
+          'Worked with REST APIs, Jest, and GitHub Actions for release quality.'
+        ].join('\\n');
+
+        const sampleJob = [
+          'We are hiring a Frontend Engineer to build product experiences with React, TypeScript, and modern state management.',
+          'You will collaborate with product, design, and backend teams to deliver accessible interfaces and measurable business outcomes.',
+          'Requirements include React, TypeScript, performance optimization, testing, CI/CD, REST APIs, and stakeholder communication.',
+          'Experience with analytics, design systems, and experimentation is a plus.'
+        ].join('\\n');
+
+        const stopwords = new Set([
+          'about', 'after', 'again', 'also', 'among', 'because', 'before', 'being', 'between', 'build',
+          'built', 'candidate', 'company', 'could', 'deliver', 'during', 'each', 'from', 'have', 'having',
+          'into', 'must', 'need', 'needs', 'other', 'our', 'role', 'that', 'their', 'there', 'these',
+          'they', 'this', 'through', 'using', 'will', 'with', 'your'
+        ]);
+
+        const skillPhrases = [
+          'react',
+          'typescript',
+          'javascript',
+          'angular',
+          'node.js',
+          'node',
+          'express',
+          'postgresql',
+          'sql',
+          'python',
+          'aws',
+          'docker',
+          'kubernetes',
+          'rest apis',
+          'testing',
+          'ci cd',
+          'performance optimization',
+          'analytics',
+          'design systems',
+          'stakeholder communication',
+          'accessibility',
+          'redux',
+          'github actions'
+        ];
+
+        const normalize = (value) =>
+          value
+            .toLowerCase()
+            .replace(/[^a-z0-9+.#\\s-]/g, ' ')
+            .replace(/\\s+/g, ' ')
+            .trim();
+
+        const extractKeywords = (value) => {
+          const normalized = normalize(value);
+          const phraseHits = skillPhrases.filter((phrase) => normalized.includes(phrase));
+          const frequency = new Map();
+
+          normalized.split(' ').forEach((word) => {
+            if (word.length < 4 || stopwords.has(word)) {
+              return;
+            }
+
+            frequency.set(word, (frequency.get(word) || 0) + 1);
+          });
+
+          const rankedWords = [...frequency.entries()]
+            .sort((left, right) => right[1] - left[1] || left[0].localeCompare(right[0]))
+            .map(([word]) => word);
+
+          return [...new Set([...phraseHits, ...rankedWords])].slice(0, 18);
+        };
+
+        const renderChips = (element, values, emptyLabel) => {
+          element.innerHTML = values.length
+            ? values.map((value) => '<span class="ats-chip">' + value + '</span>').join('')
+            : '<p class="ats-summary">' + emptyLabel + '</p>';
+        };
+
+        const renderSteps = (values) => {
+          nextStepsEl.innerHTML = values.map((value) => '<li>' + value + '</li>').join('');
+        };
+
+        const analyze = () => {
+          const resume = resumeEl.value.trim();
+          const job = jobEl.value.trim();
+
+          if (!resume || !job) {
+            scoreEl.textContent = '--';
+            summaryEl.textContent = 'Add both inputs to score the match.';
+            renderChips(strengthsEl, [], 'No strengths yet.');
+            renderChips(missingEl, [], 'No missing terms yet.');
+            renderSteps([
+              'Paste both the resume and the job description.',
+              'Run the checker again.',
+              'Use the missing terms to decide which achievements or skills need proof.'
+            ]);
+            return;
+          }
+
+          const resumeKeywords = extractKeywords(resume);
+          const jobKeywords = extractKeywords(job);
+          const overlap = jobKeywords.filter((keyword) => resumeKeywords.includes(keyword));
+          const missing = jobKeywords.filter((keyword) => !resumeKeywords.includes(keyword));
+          const score = Math.max(18, Math.min(98, Math.round((overlap.length / Math.max(jobKeywords.length, 1)) * 100)));
+
+          scoreEl.textContent = score + '%';
+          summaryEl.textContent =
+            score >= 75
+              ? 'Strong alignment. Focus on sharpening proof and measurable outcomes.'
+              : score >= 50
+                ? 'Moderate alignment. Add missing evidence and tighten role-specific language.'
+                : 'Low alignment. Reposition the resume around the job keywords before applying.';
+
+          renderChips(strengthsEl, overlap.slice(0, 10), 'No obvious overlap yet.');
+          renderChips(missingEl, missing.slice(0, 10), 'The resume already covers the strongest detected terms.');
+
+          const suggestions = [
+            overlap.length
+              ? 'Elevate the strongest matched terms near the top summary: ' + overlap.slice(0, 3).join(', ') + '.'
+              : 'Rewrite the summary so it mirrors the target role and its core technologies.',
+            missing.length
+              ? 'Add proof for missing terms if they are real strengths: ' + missing.slice(0, 3).join(', ') + '.'
+              : 'The main keywords are covered. Improve impact by adding results, metrics, or ownership language.',
+            'Rewrite at least two bullets using action + scope + measurable result instead of task-only phrasing.'
+          ];
+
+          renderSteps(suggestions);
+        };
+
+        sampleEl.addEventListener('click', () => {
+          resumeEl.value = sampleResume;
+          jobEl.value = sampleJob;
+          analyze();
+        });
+
+        runEl.addEventListener('click', analyze);
+      })();
+    </script>`,
+    data,
+    '/career-tools/ats-checker'
+  );
+}
+
+function renderToolTaxonomy(data: LibraryManifest): string {
+  const totalTools = toolCategories.reduce((count, category) => count + category.tools.length, 0);
+  const priorityOrder: ToolLaunchPriority[] = ['P0', 'P1', 'P2'];
+  const groupedCategories = priorityOrder.map((priority) => ({
+    priority,
+    items: toolCategories.filter((category) => category.launchPriority === priority)
+  }));
+
+  return layout(
+    'Tool Taxonomy',
+    `<style>
+      .taxonomy-stack {
+        display: grid;
+        gap: 1rem;
+      }
+      .taxonomy-category {
+        border: 1px solid var(--border);
+        border-radius: 1.15rem;
+        background: var(--surface);
+        box-shadow: var(--shadow-soft);
+        padding: 1rem 1.1rem;
+      }
+      .taxonomy-category summary {
+        cursor: pointer;
+        list-style: none;
+        display: grid;
+        gap: 0.45rem;
+      }
+      .taxonomy-category summary::-webkit-details-marker {
+        display: none;
+      }
+      .taxonomy-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.65rem;
+        align-items: center;
+      }
+      .taxonomy-body {
+        margin-top: 1rem;
+        display: grid;
+        gap: 1rem;
+      }
+      .taxonomy-summary {
+        color: var(--text-subtle);
+        margin: 0;
+      }
+    </style>
+    <section class="hero">
+      <p class="eyebrow">Master category blueprint</p>
+      <h1>Build the platform by reusing engines, not by inventing every tool from scratch</h1>
+      <p>This taxonomy turns the category ideas into an implementation-ready system: shared logic families, launch waves, original tools worth studying, and an initial backlog large enough to guide multiple releases.</p>
+      <div class="hero-stats">
+        <span>${toolCategories.length} categories</span>
+        <span>${totalTools} initial tools</span>
+        <span>${toolEngineBlueprints.length} shared engines</span>
+        <span>${toolImplementationWaves.length} launch waves</span>
+      </div>
+    </section>
+    <section class="panel">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Shared engines</p>
+          <h2>Most of the platform is reusable infrastructure</h2>
+          <p>If we get these engines right, we can ship categories faster without rebuilding the same logic over and over.</p>
+        </div>
+      </div>
+      <div class="grid cards">
+        ${toolEngineBlueprints
+          .map(
+            (engine) => `<article class="card-link">
+              <span class="label">${escapeHtml(engine.slug)}</span>
+              <strong>${escapeHtml(engine.name)}</strong>
+              <p class="quiet">${escapeHtml(engine.summary)}</p>
+              ${renderRows(engine.logicNotes.slice(), 'No logic notes yet.')}
+            </article>`
+          )
+          .join('')}
+      </div>
+    </section>
+    <section class="panel">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Launch order</p>
+          <h2>Ship by intent and engine readiness</h2>
+          <p>The first wave should win with clear utility pages. The later waves should use the same foundations for more sensitive workflows.</p>
+        </div>
+      </div>
+      <div class="split">
+        ${toolImplementationWaves
+          .map(
+            (wave) => `<article class="option-card">
+              <strong>${escapeHtml(wave.name)}</strong>
+              <p>${escapeHtml(wave.summary)}</p>
+              ${renderRows(wave.categories.slice(), 'No categories assigned.')}
+            </article>`
+          )
+          .join('')}
+      </div>
+    </section>
+    <section class="panel">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Category map</p>
+          <h2>Reference products tell us how the logic should feel</h2>
+          <p>These are not meant to be copied blindly. They are the clearest starting points for studying user expectations, scope, and trust mechanics.</p>
+        </div>
+      </div>
+      <div class="taxonomy-stack">
+        ${groupedCategories
+          .map(
+            (group) => `<section>
+              <div class="section-head">
+                <div>
+                  <p class="eyebrow">${escapeHtml(group.priority)}</p>
+                  <h2>${escapeHtml(
+                    group.priority === 'P0'
+                      ? 'Launch first'
+                      : group.priority === 'P1'
+                        ? 'Expand next'
+                        : 'Add after the core is stable'
+                  )}</h2>
+                </div>
+              </div>
+              <div class="taxonomy-stack">
+                ${group.items
+                  .map((category, index) => {
+                    const engineNames = category.engineSlugs.map(
+                      (engineSlug) => toolEngineBlueprints.find((engine) => engine.slug === engineSlug)?.name ?? engineSlug
+                    );
+
+                    return `<details class="taxonomy-category"${group.priority === 'P0' && index === 0 ? ' open' : ''}>
+                      <summary>
+                        <div class="taxonomy-meta">
+                          <span class="label">${escapeHtml(category.launchPriority)}</span>
+                          <strong>${escapeHtml(category.name)}</strong>
+                          <span>${category.tools.length} tools</span>
+                        </div>
+                        <p class="taxonomy-summary">${escapeHtml(category.summary)}</p>
+                        <p class="taxonomy-summary"><strong>Intent:</strong> ${escapeHtml(category.intentAngle)}</p>
+                      </summary>
+                      <div class="taxonomy-body">
+                        <article class="option-card">
+                          <strong>Core engines</strong>
+                          ${renderPills(engineNames, 'No engines listed.')}
+                        </article>
+                        <div class="split">
+                          <article class="option-card">
+                            <strong>Accuracy guardrails</strong>
+                            ${renderRows(category.accuracyNotes.slice(), 'No accuracy notes yet.')}
+                          </article>
+                          <article class="option-card">
+                            <strong>Reference products to study</strong>
+                            ${renderReferenceProducts(category.referenceProducts, 'No reference products listed.')}
+                          </article>
+                        </div>
+                        <article class="option-card">
+                          <strong>Initial backlog</strong>
+                          ${renderPills(category.tools, 'No tools listed.')}
+                        </article>
+                      </div>
+                    </details>`;
+                  })
+                  .join('')}
+              </div>
+            </section>`
+          )
+          .join('')}
+      </div>
+    </section>`,
+    data,
+    '/tool-taxonomy'
   );
 }
 
@@ -3091,7 +3757,7 @@ function renderChart(name: string, data: LibraryManifest): string {
 
 function renderPlaygroundHub(data: LibraryManifest): string {
   const defaultComponent = data.components[0];
-  const defaultMarkup = defaultComponent ? createDefaultExample(defaultComponent) : '<jarvis-button>Launch</jarvis-button>';
+  const defaultMarkup = defaultComponent ? createDefaultExample(defaultComponent) : '<eon-button>Launch</eon-button>';
   const featuredCharts = selectFeaturedCharts(data.charts, 8);
   const componentSelectOptions = data.components
     .map((component) => `<option value="${component.tag}">${escapeHtml(titleCase(component.name))}</option>`)
@@ -3133,7 +3799,7 @@ function renderPlaygroundHub(data: LibraryManifest): string {
     'Playground',
     `<section class="hero">
       <p class="eyebrow">Interactive lab</p>
-      <h1>Jarvis UI playground</h1>
+      <h1>Eon UI playground</h1>
       <p>Build quickly with copyable markup, theme switching, and a live output preview. Use the component cards for presets, then jump into the Mystique chart gallery to inspect the shared ${data.charts.length}-chart catalog with ${fullyImplementedChartCount} fully real chart implementations.</p>
       <div class="hero-stats">
         <span>${data.components.length} components</span>
@@ -3204,7 +3870,7 @@ function renderComponentIndex(data: LibraryManifest): string {
     'Components',
     `<section class="hero">
       <p class="eyebrow">Components</p>
-      <h1>Jarvis component library</h1>
+      <h1>Eon component library</h1>
       <p>Browse components by category. Each page includes options, states, API tables, anatomy, accessibility notes, and framework examples.</p>
     </section>
     ${groups
@@ -3269,7 +3935,7 @@ function renderChartIndex(data: LibraryManifest): string {
 function renderNotFound(data: LibraryManifest): string {
   return layout(
     'Not Found',
-    `<section class="hero"><p class="eyebrow">Not found</p><h1>That page does not exist</h1><p>The requested documentation page is not present in the current Jarvis manifest slice.</p></section>`,
+    `<section class="hero"><p class="eyebrow">Not found</p><h1>That page does not exist</h1><p>The requested documentation page is not present in the current Eon manifest slice.</p></section>`,
     data
   );
 }
@@ -3284,6 +3950,18 @@ function route(request: IncomingMessage, data: LibraryManifest): string {
 
   if (segments[0] === 'guides' && segments[1]) {
     return renderGuide(segments[1], data);
+  }
+
+  if (segments[0] === 'career-tools' && !segments[1]) {
+    return renderCareerHub(data);
+  }
+
+  if (segments[0] === 'career-tools' && segments[1] === 'ats-checker') {
+    return renderCareerAtsChecker(data);
+  }
+
+  if (segments[0] === 'tool-taxonomy' && !segments[1]) {
+    return renderToolTaxonomy(data);
   }
 
   if (segments[0] === 'components' && !segments[1]) {

@@ -1,18 +1,18 @@
 export const publishablePackageNames = [
-  '@jarvis/core',
-  '@jarvis/react',
-  '@jarvis/angular',
-  '@jarvis/vue',
-  '@jarvis/manifest',
-  '@jarvis/ai-prompts',
-  '@jarvis/tokens',
-  '@jarvis/styles',
-  '@jarvis/a11y',
-  '@jarvis/i18n',
-  '@mystique/core',
-  '@mystique/svg',
-  '@mystique/canvas',
-  '@mystique/components'
+  '@eonui/core',
+  '@eonui/react',
+  '@eonui/angular',
+  '@eonui/vue',
+  '@eonui/manifest',
+  '@eonui/ai-prompts',
+  '@eonui/tokens',
+  '@eonui/styles',
+  '@eonui/a11y',
+  '@eonui/i18n',
+  '@eonui/charts-core',
+  '@eonui/charts-svg',
+  '@eonui/charts-canvas',
+  '@eonui/charts'
 ] as const;
 
 export const releaseChecklist = [

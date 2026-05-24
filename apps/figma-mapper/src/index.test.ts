@@ -34,27 +34,27 @@ describe('figma mapper', () => {
     ]
   };
 
-  it('maps structured figma nodes into jarvis components', () => {
+  it('maps structured figma nodes into Eon components', () => {
     const mapped = mapFigmaTree(sample);
-    expect(mapped.tag).toBe('jarvis-section');
-    expect(mapped.children[0]?.tag).toBe('jarvis-stack');
+    expect(mapped.tag).toBe('eon-section');
+    expect(mapped.children[0]?.tag).toBe('eon-stack');
   });
 
   it('emits raw custom-element code', () => {
     const code = emitMappedTree(mapFigmaTree(sample), 'custom-elements');
-    expect(code).toContain('<jarvis-section');
-    expect(code).toContain('<jarvis-button');
+    expect(code).toContain('<eon-section');
+    expect(code).toContain('<eon-button');
   });
 
   it('emits react wrapper usage', () => {
     const code = emitMappedTree(mapFigmaTree(sample), 'react');
-    expect(code).toContain('<JarvisButton');
+    expect(code).toContain('<EonButton');
   });
 
   it('emits angular and vue compatible templates', () => {
     const mapped = mapFigmaTree(sample);
-    expect(emitMappedTree(mapped, 'angular')).toContain('<jarvis-button');
-    expect(emitMappedTree(mapped, 'vue')).toContain('<jarvis-button');
+    expect(emitMappedTree(mapped, 'angular')).toContain('<eon-button');
+    expect(emitMappedTree(mapped, 'vue')).toContain('<eon-button');
   });
 });
 

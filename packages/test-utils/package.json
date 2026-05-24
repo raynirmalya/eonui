@@ -1,5 +1,5 @@
 {
-  "name": "@jarvis/test-utils",
+  "name": "@eonui/test-utils",
   "version": "0.1.0",
   "type": "module",
   "main": "./dist/index.js",

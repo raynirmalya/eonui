@@ -1,0 +1,75 @@
+:host {
+  display: inline-flex;
+}
+
+.icon-button {
+  position: relative;
+  isolation: isolate;
+  display: inline-grid;
+  place-items: center;
+  width: var(--eon-component-field-height);
+  height: var(--eon-component-field-height);
+  border-radius: 1rem;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  background: rgba(255, 255, 255, 0.78);
+  color: var(--eon-semantic-text-primary);
+  box-shadow: var(--eon-semantic-shadow-soft);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  cursor: pointer;
+  transition:
+    transform var(--eon-motion-fast) var(--eon-motion-ease-premium),
+    box-shadow var(--eon-motion-base) var(--eon-motion-ease-premium),
+    background-color var(--eon-motion-base) var(--eon-motion-ease-premium),
+    border-color var(--eon-motion-base) var(--eon-motion-ease-premium);
+}
+
+.icon-button::before {
+  content: '';
+  position: absolute;
+  inset: 1px;
+  border-radius: inherit;
+  opacity: 0;
+  background: radial-gradient(circle at center, rgba(59, 130, 246, 0.18), transparent 70%);
+  transition: opacity var(--eon-motion-base) var(--eon-motion-ease-premium);
+}
+
+.icon-button:hover {
+  transform: translateY(-1px);
+  border-color: rgba(59, 130, 246, 0.24);
+  box-shadow:
+    0 0 0 6px rgba(59, 130, 246, 0.08),
+    var(--eon-semantic-shadow-hover);
+}
+
+.icon-button:hover::before {
+  opacity: 1;
+}
+
+.icon-button:focus-visible {
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.94),
+    0 0 0 5px var(--eon-semantic-focus-ring),
+    var(--eon-semantic-shadow-hover);
+}
+
+.icon-button:active {
+  transform: scale(0.97);
+}
+
+.icon-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.48;
+  box-shadow: none;
+}
+
+.icon-button.sm {
+  width: 2.6rem;
+  height: 2.6rem;
+}
+
+.icon-button.lg {
+  width: 3.45rem;
+  height: 3.45rem;
+  border-radius: 1.1rem;
+}

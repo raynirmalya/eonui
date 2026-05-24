@@ -1,5 +1,5 @@
 {
-  "name": "@jarvis/icons",
+  "name": "@eonui/icons",
   "version": "0.1.0",
   "type": "module",
   "main": "./dist/index.js",

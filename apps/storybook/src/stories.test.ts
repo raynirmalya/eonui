@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { componentLibrary } from '@jarvis/manifest';
+import { componentLibrary } from '@eonui/manifest';
 import { createStories } from './stories';
 
 describe('storybook stories', () => {

@@ -12,15 +12,32 @@
     "resolveJsonModule": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
+    "experimentalDecorators": true,
     "useDefineForClassFields": false,
-    "jsx": "react-jsx",
     "types": ["node"],
     "baseUrl": ".",
     "paths": {
-      "@mystique/components": ["./packages/mystique-components/src/index"],
-      "@mystique/core": ["./packages/mystique-core/src/index"],
-      "@mystique/canvas": ["./packages/mystique-canvas/src/index"],
-      "@mystique/svg": ["./packages/mystique-svg/src/index"]
+      "@eon/a11y": ["./packages/a11y/src/index"],
+      "@eon/ai-prompts": ["./packages/eon-ai-prompts/src/index"],
+      "@eon/angular": ["./packages/eon-angular/src/index"],
+      "@eon/core": ["./packages/eon-core/src/index"],
+      "@eon/i18n": ["./packages/i18n/src/index"],
+      "@eon/icons": ["./packages/icons/src/index"],
+      "@eon/manifest": ["./packages/eon-manifest/src/index"],
+      "@eon/react": ["./packages/eon-react/src/index"],
+      "@eon/styles": ["./packages/styles/src/index"],
+      "@eon/test-utils": ["./packages/test-utils/src/index"],
+      "@eon/tokens": ["./packages/tokens/src/index"],
+      "@eon/utils": ["./packages/utils/src/index"],
+      "@eon/vue": ["./packages/eon-vue/src/index"],
+      "@eon/charts": ["./packages/eon-charts/src/index"],
+      "@eon/charts-core": ["./packages/eon-charts-core/src/index"],
+      "@eon/charts-canvas": ["./packages/eon-charts-canvas/src/index"],
+      "@eon/charts-svg": ["./packages/eon-charts-svg/src/index"],
+      "@nabuela/components": ["./packages/nabuela-components/src/index"],
+      "@nabuela/core": ["./packages/nabuela-core/src/index"],
+      "@nabuela/canvas": ["./packages/nabuela-canvas/src/index"],
+      "@nabuela/svg": ["./packages/nabuela-svg/src/index"]
     }
   }
 }

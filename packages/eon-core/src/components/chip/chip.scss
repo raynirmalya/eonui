@@ -1,0 +1,35 @@
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 2.2rem;
+  padding: 0 0.85rem;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  background: rgba(255, 255, 255, 0.82);
+  color: var(--eon-semantic-text-primary);
+  box-shadow: var(--eon-semantic-shadow-soft);
+}
+
+button {
+  border: none;
+  background: transparent;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
+  color: var(--eon-semantic-text-secondary);
+  transition: color var(--eon-motion-base) var(--eon-motion-ease-premium);
+}
+
+button:hover {
+  color: var(--eon-semantic-text-primary);
+}
+
+:host-context([data-theme-family='material']) .chip {
+  border-radius: 1rem;
+}
+
+:host-context([data-theme-family='fluent']) .chip {
+  border-radius: 0.5rem;
+  background: rgba(255, 255, 255, 0.74);
+}

@@ -7,14 +7,13 @@
   },
   "references": [
     { "path": "../../packages/a11y" },
-    { "path": "../../packages/jarvis-manifest" },
-    { "path": "../../packages/jarvis-react" },
-    { "path": "../../packages/jarvis-angular" },
+    { "path": "../../packages/eon-manifest" },
+    { "path": "../../packages/eon-angular" },
     { "path": "../../packages/i18n" },
-    { "path": "../../packages/jarvis-vue" },
+    { "path": "../../packages/eon-vue" },
     { "path": "../../packages/styles" },
-    { "path": "../../packages/mystique-components" },
-    { "path": "../../packages/mystique-core" }
+    { "path": "../../packages/eon-charts" },
+    { "path": "../../packages/eon-charts-core" }
   ],
   "include": ["src/**/*"]
 }

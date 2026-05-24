@@ -1,13 +1,13 @@
 import { readFile } from 'node:fs/promises';
 import { createServer, type IncomingMessage } from 'node:http';
 import { resolve } from 'node:path';
-import { componentLibrary } from '@jarvis/manifest';
-import type { LibraryManifest } from '@jarvis/manifest';
+import { componentLibrary } from '@eonui/manifest';
+import type { LibraryManifest } from '@eonui/manifest';
 import { createStories } from './stories';
 
 async function loadManifestData(): Promise<LibraryManifest> {
   try {
-    const raw = await readFile(resolve(process.cwd(), '../../packages/jarvis-manifest/generated/library.manifest.json'), 'utf8');
+    const raw = await readFile(resolve(process.cwd(), '../../packages/eon-manifest/generated/library.manifest.json'), 'utf8');
     return JSON.parse(raw) as LibraryManifest;
   } catch {
     return {
@@ -26,7 +26,7 @@ loadManifestData().then((data) => {
 <html>
   <head>
     <meta charset="utf-8" />
-    <title>${title} | Jarvis Storybook</title>
+    <title>${title} | Eon Storybook</title>
     <style>
       body { font-family: 'IBM Plex Sans', sans-serif; margin: 0; background: #f8fafc; color: #111827; }
       .shell { display: grid; grid-template-columns: 18rem minmax(0, 1fr); min-height: 100vh; }
@@ -46,7 +46,7 @@ loadManifestData().then((data) => {
   <body>
     <div class="shell">
       <nav>
-        <h1><a href="/">Jarvis Storybook</a></h1>
+        <h1><a href="/">Eon Storybook</a></h1>
         <p>${stories.length} manifest-driven stories.</p>
         <ul>${stories.map((story) => `<li><a href="/stories/${story.id}">${story.componentTag}</a></li>`).join('')}</ul>
       </nav>
@@ -61,7 +61,7 @@ loadManifestData().then((data) => {
       'Home',
       `<section class="panel">
         <h1>Story Catalog</h1>
-        <p>Isolated preview entries generated from the Jarvis manifest layer.</p>
+        <p>Isolated preview entries generated from the Eon manifest layer.</p>
         <div class="grid">
           ${stories.map((story) => `<a class="card-link" href="/stories/${story.id}"><strong>${story.componentTag}</strong><p>${story.summary}</p></a>`).join('')}
         </div>

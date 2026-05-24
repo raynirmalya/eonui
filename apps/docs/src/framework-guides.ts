@@ -1,6 +1,6 @@
-import { angularIntegrationGuide, angularUsageExample } from '@jarvis/angular';
-import { reactIntegrationNotes, reactUsageExample } from '@jarvis/react';
-import { vueIntegrationGuide, vueUsageExample } from '@jarvis/vue';
+import { angularIntegrationGuide, angularUsageExample } from '@eonui/angular';
+import { reactIntegrationNotes, reactUsageExample } from '../../../packages/eon-react/dist/index.js';
+import { vueIntegrationGuide, vueUsageExample } from '@eonui/vue';
 
 export const frameworkGuides = {
   react: {

@@ -1,5 +1,5 @@
-import { chartLibrary, componentLibrary } from '@jarvis/manifest';
-import { createMystiqueChart, createMystiqueChartPreview } from '@mystique/components';
+import { chartLibrary, componentLibrary } from '@eonui/manifest';
+import { createMystiqueChart, createMystiqueChartPreview } from '@eonui/charts';
 
 const featuredChartNames = [
   'line-forecast-band',
@@ -26,7 +26,7 @@ const spotlightPreview = createMystiqueChartPreview(featuredCharts[0]?.name ?? '
 });
 
 export const playgroundExamples = {
-  jarvisPreview: `<${componentLibrary[0]?.tag ?? 'jarvis-button'} variant="primary">Launch</${componentLibrary[0]?.tag ?? 'jarvis-button'}>`,
+  EonPreview: `<${componentLibrary[0]?.tag ?? 'eon-button'} variant="primary">Launch</${componentLibrary[0]?.tag ?? 'eon-button'}>`,
   chartCatalogCount: chartLibrary.length,
   fullyImplementedChartCount,
   featuredCharts: featuredCharts.map((chart) => chart.name),
@@ -43,7 +43,7 @@ export const playgroundExamples = {
     }
   }),
   notes: [
-    'Use the playground as a fast integration smoke surface for Jarvis components and Mystique charts.',
+    'Use the playground as a fast integration smoke surface for Eon components and Mystique charts.',
     'Favor manifest-backed examples so docs, AI prompts, and playground snippets stay aligned.',
     `Target ${chartLibrary.length} chart entries with shared SVG and canvas implementation contracts.`,
     `${fullyImplementedChartCount} chart entries currently have fully real SVG and canvas implementation coverage.`,

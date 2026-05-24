@@ -1,5 +1,5 @@
 {
-  "name": "@jarvis/figma-mapper",
+  "name": "@eonui/figma-mapper",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -11,8 +11,8 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@jarvis/manifest": "workspace:*",
-    "@jarvis/tokens": "workspace:*"
+    "@eonui/manifest": "workspace:*",
+    "@eonui/tokens": "workspace:*"
   }
 }
 

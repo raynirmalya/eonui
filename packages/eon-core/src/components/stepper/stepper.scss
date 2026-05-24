@@ -1,0 +1,201 @@
+:host {
+  display: block;
+}
+
+.stepper {
+  display: flex;
+  align-items: stretch;
+  gap: 0.35rem;
+}
+
+.stepper.vertical {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.step {
+  position: relative;
+  min-width: 0;
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: 0.72rem;
+  padding: 0.4rem 0.5rem;
+  border: none;
+  background: transparent;
+  color: var(--eon-semantic-text-secondary);
+  font: inherit;
+  cursor: pointer;
+  transition: transform var(--eon-motion-fast) var(--eon-motion-ease-premium);
+}
+
+.step.sm {
+  gap: 0.48rem;
+}
+
+.step.lg {
+  gap: 0.9rem;
+}
+
+.step:hover,
+.step:focus-visible {
+  transform: translateY(-1px);
+  outline: none;
+}
+
+.stepper.vertical .step {
+  grid-template-columns: auto 1fr;
+  justify-items: start;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.indicator {
+  position: relative;
+  z-index: 1;
+  width: 2.2rem;
+  height: 2.2rem;
+  display: inline-grid;
+  place-items: center;
+  border: 1px solid rgba(148, 163, 184, 0.36);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--eon-semantic-text-secondary);
+  font-size: 0.88rem;
+  font-weight: 700;
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.06);
+  transition:
+    background-color var(--eon-motion-fast) var(--eon-motion-ease-premium),
+    color var(--eon-motion-fast) var(--eon-motion-ease-premium),
+    border-color var(--eon-motion-fast) var(--eon-motion-ease-premium),
+    box-shadow var(--eon-motion-fast) var(--eon-motion-ease-premium),
+    transform var(--eon-motion-fast) var(--eon-motion-ease-premium);
+}
+
+.step.sm .indicator {
+  width: 1.8rem;
+  height: 1.8rem;
+  font-size: 0.76rem;
+}
+
+.step.lg .indicator {
+  width: 2.6rem;
+  height: 2.6rem;
+  font-size: 0.95rem;
+}
+
+.content {
+  display: grid;
+  gap: 0.18rem;
+  text-align: center;
+}
+
+.stepper.vertical .content {
+  text-align: left;
+}
+
+.label {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--eon-semantic-text-primary);
+}
+
+.hint {
+  color: var(--eon-semantic-text-tertiary);
+  font-size: 0.78rem;
+  line-height: 1.35;
+}
+
+.step.sm .label {
+  font-size: 0.84rem;
+}
+
+.step.lg .label {
+  font-size: 0.98rem;
+}
+
+.step.lg .hint {
+  font-size: 0.82rem;
+}
+
+.connector {
+  position: absolute;
+  top: 1.45rem;
+  left: calc(50% + 1.3rem);
+  right: calc(-50% + 1.3rem);
+  height: 2px;
+  background: rgba(148, 163, 184, 0.28);
+}
+
+.stepper.vertical .connector {
+  top: calc(100% - 0.25rem);
+  left: 1.05rem;
+  right: auto;
+  width: 2px;
+  height: calc(100% - 0.15rem);
+}
+
+.step.blocked,
+:host([disabled]) .step {
+  cursor: not-allowed;
+}
+
+.step.active .indicator,
+.step.complete .indicator {
+  border-color: transparent;
+  background: var(--eon-semantic-action-primaryBg);
+  color: var(--eon-semantic-action-primaryText);
+  box-shadow:
+    0 14px 30px rgba(29, 78, 216, 0.18),
+    0 0 0 6px rgba(59, 130, 246, 0.08);
+}
+
+.step.complete .connector,
+.step.active .connector {
+  background: rgba(37, 99, 235, 0.38);
+}
+
+.step.optional .hint {
+  color: var(--eon-semantic-action-primaryBg);
+}
+
+.step.invalid .indicator {
+  background: rgba(255, 255, 255, 0.92);
+  border-color: rgba(220, 38, 38, 0.42);
+  color: #b91c1c;
+  box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.08);
+}
+
+.step.blocked {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.step.blocked .indicator {
+  box-shadow: none;
+}
+
+:host-context([data-theme='dark']) .indicator {
+  background: rgba(15, 23, 42, 0.92);
+  border-color: rgba(148, 163, 184, 0.24);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.26);
+}
+
+:host-context([data-theme='dark']) .step.active .indicator,
+:host-context([data-theme='dark']) .step.complete .indicator {
+  box-shadow:
+    0 18px 32px rgba(37, 99, 235, 0.26),
+    0 0 0 6px rgba(37, 99, 235, 0.14);
+}
+
+:host-context([data-theme-family='material']) .indicator {
+  border-radius: 0.8rem;
+}
+
+:host-context([data-theme-family='material']) .step {
+  gap: 0.6rem;
+}
+
+:host-context([data-theme-family='fluent']) .indicator {
+  border-radius: 0.5rem;
+}

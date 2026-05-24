@@ -1,0 +1,80 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  display: none;
+  background: rgba(15, 23, 42, 0.36);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.overlay.open {
+  display: block;
+}
+
+.drawer {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: min(100%, 26rem);
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: 1rem;
+  padding: 1.4rem;
+  border-left: 1px solid rgba(255, 255, 255, 0.18);
+  border-right: 1px solid rgba(255, 255, 255, 0.18);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.86), rgba(248, 250, 252, 0.76)),
+    rgba(255, 255, 255, 0.82);
+  box-shadow: 0 24px 56px rgba(15, 23, 42, 0.18);
+  transform: translateX(100%);
+  transition: transform var(--eon-motion-slow) var(--eon-motion-ease-premium);
+  outline: none;
+}
+
+.drawer.fullscreen {
+  width: 100vw;
+  max-width: 100vw;
+  border: none;
+  border-radius: 0;
+}
+
+.drawer.right {
+  right: 0;
+}
+
+.drawer.left {
+  left: 0;
+  transform: translateX(-100%);
+}
+
+.drawer.open.right,
+.drawer.open.left {
+  transform: translateX(0);
+}
+
+.body {
+  overflow: auto;
+}
+
+.header,
+.footer {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+:host-context([data-theme-family='material']) .drawer {
+  border-radius: 1.6rem 0 0 1rem;
+  background: rgba(255, 251, 254, 0.96);
+}
+
+:host-context([data-theme-family='material']) .drawer.left {
+  border-radius: 0 1.6rem 1rem 0;
+}
+
+:host-context([data-theme-family='fluent']) .drawer {
+  border-radius: 0;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.82), rgba(245, 248, 252, 0.72)),
+    rgba(255, 255, 255, 0.76);
+}

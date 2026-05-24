@@ -1,0 +1,14 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "composite": true,
+    "rootDir": "./src",
+    "outDir": "./dist"
+  },
+  "references": [
+    { "path": "../eon-charts-core" },
+    { "path": "../eon-charts-svg" },
+    { "path": "../eon-charts-canvas" }
+  ],
+  "include": ["src/**/*"]
+}

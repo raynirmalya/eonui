@@ -2,9 +2,9 @@ export const guidePages = [
   {
     slug: 'getting-started',
     title: 'Getting Started',
-    summary: 'Install Jarvis UI packages, register custom elements, and start composing token-driven layouts.',
+    summary: 'Install Eon UI packages, register custom elements, and start composing token-driven layouts.',
     body: [
-      'Jarvis UI is built around standards-based custom elements with framework wrappers for React, Angular, and Vue.',
+      'Eon UI is built around standards-based custom elements with framework wrappers for React, Angular, and Vue.',
       'Start with tokens, surface, stack, grid, and section primitives, then layer in form controls and overlays.',
       'Use generated manifests as the source of truth for props, events, slots, parts, and composition guidance.'
     ]
@@ -14,9 +14,9 @@ export const guidePages = [
     title: 'Installation',
     summary: 'Choose the packages you need for core Web Components, framework wrappers, tokens, and charts.',
     body: [
-      'Install @jarvis/core for the component platform and @jarvis/tokens for theme primitives.',
-      'Add @jarvis/react, @jarvis/angular, or @jarvis/vue when working inside those frameworks.',
-      'Use @mystique/components when you need chart rendering on top of the Jarvis design system.'
+      'Install @eonui/core for the component platform and @eonui/tokens for theme primitives.',
+      'Add @eonui/react, @eonui/angular, or @eonui/vue when working inside those frameworks.',
+      'Use @eonui/charts when you need chart rendering on top of the Eon design system.'
     ]
   },
   {
@@ -24,7 +24,7 @@ export const guidePages = [
     title: 'Theming',
     summary: 'Apply light, dark, and density variants through generated CSS variable layers.',
     body: [
-      'Jarvis tokens generate root variables plus theme and density selectors.',
+      'Eon tokens generate root variables plus theme and density selectors.',
       'Theme switching is designed around data attributes so product apps can toggle context at runtime.',
       'Components consume semantic and component tokens rather than hard-coded colors and spacing.'
     ]
@@ -32,7 +32,7 @@ export const guidePages = [
   {
     slug: 'accessibility',
     title: 'Accessibility',
-    summary: 'Jarvis UI is designed with keyboard support, ARIA semantics, and focus visibility from the start.',
+    summary: 'Eon UI is designed with keyboard support, ARIA semantics, and focus visibility from the start.',
     body: [
       'Prefer native semantics when possible and augment with ARIA only where component behavior requires it.',
       'Use visible labels, helper text, error text, and focus management utilities together for form quality.',
@@ -44,7 +44,7 @@ export const guidePages = [
     title: 'Internationalization',
     summary: 'Locale and direction support are first-class concerns across text, layout, and formatting.',
     body: [
-      'Use @jarvis/i18n helpers for locale-aware number and date formatting.',
+      'Use @eonui/i18n helpers for locale-aware number and date formatting.',
       'Avoid hard-coded copy inside reusable components and keep message patterns externalized.',
       'Prefer layout primitives and logical alignment so RTL behavior stays predictable.'
     ]
@@ -72,20 +72,20 @@ export const guidePages = [
   {
     slug: 'ai',
     title: 'AI Prompt Usage',
-    summary: 'Jarvis manifests and prompt templates help agents generate valid component trees and safer layouts.',
+    summary: 'Eon manifests and prompt templates help agents generate valid component trees and safer layouts.',
     body: [
       'Use manifest metadata for allowed props, events, slots, parts, and composition rules.',
-      'Prompt templates should constrain generation to valid Jarvis building blocks.',
+      'Prompt templates should constrain generation to valid Eon building blocks.',
       'AI output should be validated against generated manifests rather than undocumented assumptions.'
     ]
   },
   {
     slug: 'figma-mapping',
     title: 'Figma Mapping',
-    summary: 'Structured design exports can be mapped onto Jarvis tokens, layout primitives, and components.',
+    summary: 'Structured design exports can be mapped onto Eon tokens, layout primitives, and components.',
     body: [
-      'Token references should resolve to @jarvis/tokens rather than ad hoc visual values.',
-      'Component variants should map to Jarvis public APIs and composition rules.',
+      'Token references should resolve to @eonui/tokens rather than ad hoc visual values.',
+      'Component variants should map to Eon public APIs and composition rules.',
       'Layout frames should prefer stack, grid, section, and surface primitives.'
     ]
   },

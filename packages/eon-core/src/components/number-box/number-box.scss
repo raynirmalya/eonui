@@ -1,0 +1,104 @@
+:host {
+  display: grid;
+}
+
+.field {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.label {
+  color: var(--eon-semantic-text-secondary);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.control-wrap {
+  position: relative;
+}
+
+.control-wrap.invalid input {
+  border-color: rgba(220, 38, 38, 0.5);
+  box-shadow: 0 0 0 4px rgba(254, 226, 226, 0.8);
+}
+
+.control-wrap.readonly input {
+  background: rgba(248, 250, 252, 0.9);
+  color: var(--eon-semantic-text-secondary);
+}
+
+input {
+  width: 100%;
+  min-height: var(--eon-component-field-height);
+  padding: 0 4.9rem 0 1rem;
+  border: 1px solid var(--eon-semantic-border-default);
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.84);
+  color: var(--eon-semantic-text-primary);
+  font: inherit;
+  box-shadow: var(--eon-semantic-shadow-soft);
+}
+
+input:focus {
+  outline: none;
+  border-color: rgba(59, 130, 246, 0.34);
+  box-shadow: 0 0 0 4px var(--eon-semantic-focus-ring), var(--eon-semantic-shadow-hover);
+}
+
+.spin-buttons {
+  position: absolute;
+  top: 50%;
+  right: 0.45rem;
+  display: inline-flex;
+  gap: 0.25rem;
+  transform: translateY(-50%);
+}
+
+.icon {
+  width: 1.8rem;
+  height: 1.8rem;
+  display: grid;
+  place-items: center;
+  border: none;
+  border-radius: 0.55rem;
+  background: rgba(241, 245, 249, 0.94);
+  color: var(--eon-semantic-text-secondary);
+  font: inherit;
+  cursor: pointer;
+}
+
+.clear {
+  right: 4.45rem;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.icon:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.message {
+  font-size: 0.82rem;
+}
+
+.help {
+  color: var(--eon-semantic-text-tertiary);
+}
+
+.error {
+  color: rgb(185, 28, 28);
+}
+
+:host-context([data-theme-family='material']) input {
+  border-radius: 1rem;
+}
+
+:host-context([data-theme-family='fluent']) input {
+  border-radius: 0.55rem;
+}
+
+:host-context([data-theme-family='fluent']) .icon {
+  border-radius: 0.4rem;
+}

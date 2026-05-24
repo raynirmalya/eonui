@@ -1,0 +1,135 @@
+.trigger {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.content {
+  position: absolute;
+  z-index: 20;
+  display: grid;
+  gap: 0.35rem;
+  max-width: var(--tooltip-max-width, 18rem);
+  padding: 0.55rem 0.8rem;
+  border-radius: 0.75rem;
+  background:
+    linear-gradient(180deg, rgba(30, 41, 59, 0.92), rgba(15, 23, 42, 0.96)),
+    #111827;
+  color: white;
+  font-size: 0.84rem;
+  line-height: 1.4;
+  box-shadow: 0 14px 28px rgba(15, 23, 42, 0.24);
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity var(--eon-motion-fast) var(--eon-motion-ease-premium),
+    transform var(--eon-motion-fast) var(--eon-motion-ease-premium);
+}
+
+.content.interactive.open {
+  pointer-events: auto;
+}
+
+.heading {
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.body {
+  display: block;
+}
+
+.content ::slotted([slot='content']) {
+  display: block;
+}
+
+.content::after {
+  content: '';
+  position: absolute;
+  width: 0.72rem;
+  height: 0.72rem;
+  background: rgba(15, 23, 42, 0.96);
+  transform: rotate(45deg);
+  opacity: 0;
+}
+
+.content.open {
+  opacity: 1;
+}
+
+.content.top {
+  bottom: calc(100% + 0.65rem);
+  left: 50%;
+  transform: translateX(-50%) translateY(2px);
+}
+
+.content.top.open {
+  transform: translateX(-50%) translateY(0);
+}
+
+.content.top.arrow::after {
+  left: 50%;
+  bottom: -0.3rem;
+  margin-left: -0.36rem;
+  opacity: 1;
+}
+
+.content.right {
+  top: 50%;
+  left: calc(100% + 0.65rem);
+  transform: translateY(-50%) translateX(-2px);
+}
+
+.content.right.open {
+  transform: translateY(-50%) translateX(0);
+}
+
+.content.right.arrow::after {
+  left: -0.3rem;
+  top: 50%;
+  margin-top: -0.36rem;
+  opacity: 1;
+}
+
+.content.bottom {
+  top: calc(100% + 0.65rem);
+  left: 50%;
+  transform: translateX(-50%) translateY(-2px);
+}
+
+.content.bottom.open {
+  transform: translateX(-50%) translateY(0);
+}
+
+.content.bottom.arrow::after {
+  left: 50%;
+  top: -0.3rem;
+  margin-left: -0.36rem;
+  opacity: 1;
+}
+
+.content.left {
+  top: 50%;
+  right: calc(100% + 0.65rem);
+  transform: translateY(-50%) translateX(2px);
+}
+
+.content.left.open {
+  transform: translateY(-50%) translateX(0);
+}
+
+.content.left.arrow::after {
+  right: -0.3rem;
+  top: 50%;
+  margin-top: -0.36rem;
+  opacity: 1;
+}
+
+:host-context([data-theme-family='material']) .content {
+  border-radius: 1rem;
+}
+
+:host-context([data-theme-family='fluent']) .content {
+  border-radius: 0.45rem;
+}

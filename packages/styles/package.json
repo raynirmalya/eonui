@@ -1,5 +1,5 @@
 {
-  "name": "@jarvis/styles",
+  "name": "@eonui/styles",
   "version": "0.1.0",
   "type": "module",
   "publishConfig": {
@@ -20,6 +20,6 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@jarvis/tokens": "workspace:*"
+    "@eonui/tokens": "workspace:*"
   }
 }

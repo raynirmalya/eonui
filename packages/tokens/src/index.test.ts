@@ -4,7 +4,7 @@ import { createCssVariables, createDensityCss, createThemeBundleCss, createTheme
 describe('tokens', () => {
   it('creates css variables', () => {
     const css = createCssVariables();
-    expect(css).toContain('--jarvis-semantic-text-primary');
+    expect(css).toContain('--eon-semantic-text-primary');
     expect(css).toContain('#101828');
     expect(css).not.toContain('{base.');
   });
@@ -12,19 +12,19 @@ describe('tokens', () => {
   it('creates theme css selectors', () => {
     const css = createThemeCss('dark');
     expect(css).toContain('[data-theme="dark"]');
-    expect(css).toContain('--jarvis-semantic-text-primary');
+    expect(css).toContain('--eon-semantic-text-primary');
   });
 
   it('creates theme family css selectors', () => {
     const css = createThemeFamilyCss('generic');
     expect(css).toContain('[data-theme-family="generic"]');
-    expect(css).toContain('--jarvis-semantic-action-primaryBg');
+    expect(css).toContain('--eon-semantic-action-primaryBg');
   });
 
   it('creates density css selectors', () => {
     const css = createDensityCss('compact');
     expect(css).toContain('[data-density="compact"]');
-    expect(css).toContain('--jarvis-space-controlY');
+    expect(css).toContain('--eon-space-controlY');
   });
 
   it('creates a full theme bundle', () => {

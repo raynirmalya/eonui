@@ -1,4 +1,4 @@
-import { flattenTokens, tokens } from '@jarvis/tokens';
+import { flattenTokens, tokens } from '@eonui/tokens';
 
 export type Datum = Record<string, string | number | Date>;
 export type ChartType =

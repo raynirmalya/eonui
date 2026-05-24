@@ -7,4 +7,6 @@ coverage
 storybook-static
 pnpm-lock.yaml
 .changeset/pre.json
-
+*.tsbuildinfo
+_tmp_*
+packages/eon-core/.stencil/

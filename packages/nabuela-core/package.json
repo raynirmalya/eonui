@@ -20,7 +20,7 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@jarvis/tokens": "workspace:*",
-    "@jarvis/utils": "workspace:*"
+    "@eonui/tokens": "workspace:*",
+    "@eonui/utils": "workspace:*"
   }
 }

@@ -5,7 +5,7 @@
 - unit tests in packages and apps
 - contract tests for manifests, wrappers, tokens, and release metadata
 - accessibility smoke tests for core controls, overlays, and navigation widgets
-- playground-backed integration smoke examples for Jarvis and Mystique
+- playground-backed integration smoke examples for Eon and Mystique
 - visual regression workflow placeholder
 
 ## Next Layers

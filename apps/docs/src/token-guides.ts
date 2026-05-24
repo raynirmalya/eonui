@@ -1,4 +1,4 @@
-import { themeCatalog, tokenCatalog } from '@jarvis/styles';
+import { themeCatalog, tokenCatalog } from '@eonui/styles';
 
 export const tokenGuide = {
   families: themeCatalog.families,

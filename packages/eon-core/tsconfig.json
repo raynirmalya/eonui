@@ -1,0 +1,31 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "composite": true,
+    "baseUrl": "../..",
+    "rootDir": "./src",
+    "outDir": "./dist/types",
+    "jsx": "react",
+    "jsxFactory": "h",
+    "jsxFragmentFactory": "Fragment",
+    "types": ["node", "@stencil/core"],
+    "strictPropertyInitialization": false,
+    "paths": {
+      "@eonui/a11y": ["packages/a11y/dist/index"],
+      "@eonui/icons": ["packages/icons/dist/index"],
+      "@eonui/i18n": ["packages/i18n/dist/index"],
+      "@eonui/styles": ["packages/styles/dist/index"],
+      "@eonui/tokens": ["packages/tokens/dist/index"],
+      "@eonui/utils": ["packages/utils/dist/index"]
+    }
+  },
+  "references": [
+    { "path": "../a11y" },
+    { "path": "../icons" },
+    { "path": "../i18n" },
+    { "path": "../styles" },
+    { "path": "../tokens" },
+    { "path": "../utils" }
+  ],
+  "include": ["src"]
+}

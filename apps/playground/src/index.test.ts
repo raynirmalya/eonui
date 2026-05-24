@@ -2,8 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { playgroundExamples } from './examples';
 
 describe('playground examples', () => {
-  it('exposes a manifest-backed Jarvis preview', () => {
-    expect(playgroundExamples.jarvisPreview).toContain('jarvis-');
+  it('exposes a manifest-backed Eon preview', () => {
+    expect(playgroundExamples.EonPreview).toContain('eon-');
   });
 
   it('exposes a chart preview for Mystique integration smoke testing', () => {

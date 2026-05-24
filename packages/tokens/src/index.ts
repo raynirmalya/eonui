@@ -48,7 +48,7 @@ function resolveValue(value: string, source: Record<string, unknown>, seen = new
 
 function createThemeVariableName(key: string): string {
   const normalizedKey = key.replace(/^color\./, 'semantic.');
-  return `--jarvis-${normalizedKey.replace(/\./g, '-')}`;
+  return `--eon-${normalizedKey.replace(/\./g, '-')}`;
 }
 
 export function flattenTokens(source: Record<string, unknown>, prefix = ''): Record<string, TokenNode> {
@@ -72,7 +72,7 @@ export function createCssVariables(): string {
   });
 
   const lines = Object.entries(flattened).map(([key, token]) => {
-    const cssName = `--jarvis-${key.replace(/\./g, '-')}`;
+    const cssName = `--eon-${key.replace(/\./g, '-')}`;
     return `  ${cssName}: ${resolveValue(token.$value, tokens as Record<string, unknown>)};`;
   });
 
@@ -90,7 +90,7 @@ export function createScssMap(): string {
   const pairs = Object.entries(flattened).map(
     ([key, token]) => `  "${key}": ${resolveValue(token.$value, tokens as Record<string, unknown>)}`
   );
-  return `$jarvis-tokens: (\n${pairs.join(',\n')}\n);`;
+  return `$eon-tokens: (\n${pairs.join(',\n')}\n);`;
 }
 
 function flattenThemeEntries(source: Record<string, unknown>, prefix = ''): Record<string, TokenNode> {
@@ -119,7 +119,7 @@ export function createThemeCss(themeName: keyof typeof tokens.themes): string {
 export function createThemeFamilyCss(themeFamilyName: keyof typeof tokens.themeFamilies): string {
   const flattened = flattenTokens(tokens.themeFamilies[themeFamilyName] as Record<string, unknown>);
   const lines = Object.entries(flattened).map(([key, token]) => {
-    const cssName = `--jarvis-${key.replace(/\./g, '-')}`;
+    const cssName = `--eon-${key.replace(/\./g, '-')}`;
     return `  ${cssName}: ${resolveValue(token.$value, tokens as Record<string, unknown>)};`;
   });
 
@@ -129,7 +129,7 @@ export function createThemeFamilyCss(themeFamilyName: keyof typeof tokens.themeF
 export function createDensityCss(densityName: keyof typeof tokens.density): string {
   const flattened = flattenThemeEntries(tokens.density[densityName] as Record<string, unknown>);
   const lines = Object.entries(flattened).map(([key, token]) => {
-    const cssName = `--jarvis-${key.replace(/\./g, '-')}`;
+    const cssName = `--eon-${key.replace(/\./g, '-')}`;
     return `  ${cssName}: ${resolveValue(token.$value, tokens as Record<string, unknown>)};`;
   });
 
@@ -159,7 +159,7 @@ export function createTokenCatalog(): TokenCatalogEntry[] {
 
   return Object.entries(flattened).map(([key, token]) => ({
     key,
-    cssVariable: `--jarvis-${key.replace(/\./g, '-')}`,
+    cssVariable: `--eon-${key.replace(/\./g, '-')}`,
     type: token.$type,
     value: resolveValue(token.$value, tokens as Record<string, unknown>),
     category: key.split('.')[0] ?? 'misc'

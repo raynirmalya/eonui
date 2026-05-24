@@ -1,0 +1,76 @@
+:host {
+  display: inline-flex;
+  max-width: 100%;
+}
+
+.group {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  padding: 0.3rem;
+  border: 1px solid var(--eon-semantic-border-default);
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.74);
+  box-shadow: var(--eon-semantic-shadow-soft);
+}
+
+.group.vertical {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+button {
+  min-height: 2.5rem;
+  padding: 0 0.95rem;
+  border: none;
+  border-radius: 0.75rem;
+  background: transparent;
+  color: var(--eon-semantic-text-secondary);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    transform var(--eon-motion-fast) var(--eon-motion-ease-premium),
+    background-color var(--eon-motion-fast) var(--eon-motion-ease-premium),
+    color var(--eon-motion-fast) var(--eon-motion-ease-premium),
+    box-shadow var(--eon-motion-fast) var(--eon-motion-ease-premium);
+}
+
+button:hover,
+button:focus-visible {
+  background: rgba(255, 255, 255, 0.88);
+  color: var(--eon-semantic-text-primary);
+}
+
+button.selected {
+  background: var(--eon-semantic-action-primaryBg);
+  color: var(--eon-semantic-action-primaryText);
+  box-shadow: 0 10px 24px rgba(29, 78, 216, 0.2);
+}
+
+button:active {
+  transform: scale(0.98);
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+:host-context([data-theme-family='material']) .group {
+  border-radius: 1.15rem;
+  background: rgba(255, 251, 254, 0.94);
+}
+
+:host-context([data-theme-family='material']) button.selected {
+  border-radius: 0.95rem;
+}
+
+:host-context([data-theme-family='fluent']) .group {
+  border-radius: 0.65rem;
+  background: rgba(255, 255, 255, 0.82);
+}
+
+:host-context([data-theme-family='fluent']) button {
+  border-radius: 0.45rem;
+}

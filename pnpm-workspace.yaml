@@ -6,16 +6,16 @@ packages:
   - packages/a11y
   - packages/i18n
   - packages/icons
-  - packages/jarvis-ai-prompts
-  - packages/jarvis-angular
-  - packages/jarvis-core
-  - packages/jarvis-manifest
-  - packages/jarvis-react
-  - packages/jarvis-vue
-  - packages/mystique-canvas
-  - packages/mystique-components
-  - packages/mystique-core
-  - packages/mystique-svg
+  - packages/eon-ai-prompts
+  - packages/eon-angular
+  - packages/eon-core
+  - packages/eon-manifest
+  - packages/eon-react
+  - packages/eon-vue
+  - packages/eon-charts-canvas
+  - packages/eon-charts
+  - packages/eon-charts-core
+  - packages/eon-charts-svg
   - packages/styles
   - packages/test-utils
   - packages/tokens

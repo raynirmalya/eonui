@@ -1,0 +1,82 @@
+:root {
+  --eon-semantic-surface-canvas: #f6f7fb;
+  --eon-semantic-surface-sunken: #eef2f8;
+  --eon-semantic-surface-raised: rgba(255, 255, 255, 0.82);
+  --eon-semantic-surface-overlay: rgba(255, 255, 255, 0.72);
+  --eon-semantic-text-primary: #111827;
+  --eon-semantic-text-secondary: #5f6b7d;
+  --eon-semantic-text-tertiary: #8a94a6;
+  --eon-semantic-action-primaryBg: #1d4ed8;
+  --eon-semantic-action-primaryBgHover: #1e40af;
+  --eon-semantic-action-primaryText: #ffffff;
+  --eon-semantic-border-default: rgba(148, 163, 184, 0.2);
+  --eon-semantic-border-strong: rgba(99, 115, 139, 0.28);
+  --eon-semantic-focus-ring: rgba(59, 130, 246, 0.24);
+  --eon-semantic-focus-line: rgba(29, 78, 216, 0.7);
+  --eon-semantic-glow-soft: rgba(59, 130, 246, 0.12);
+  --eon-semantic-shadow-ambient: 0 24px 60px rgba(15, 23, 42, 0.08);
+  --eon-semantic-shadow-soft:
+    0 1px 1px rgba(15, 23, 42, 0.02),
+    0 10px 30px rgba(15, 23, 42, 0.06);
+  --eon-semantic-shadow-hover:
+    0 1px 1px rgba(15, 23, 42, 0.03),
+    0 18px 42px rgba(15, 23, 42, 0.1);
+  --eon-component-button-paddingX: 1.1rem;
+  --eon-component-button-paddingY: 0.72rem;
+  --eon-component-button-radius: 0.95rem;
+  --eon-component-field-height: 3.1rem;
+  --eon-component-surface-padding: 1.25rem;
+  --eon-font-sans: 'Inter', 'IBM Plex Sans', 'Segoe UI', sans-serif;
+  --eon-font-display: 'Inter', 'IBM Plex Sans', 'Segoe UI', sans-serif;
+  --eon-motion-ease-premium: cubic-bezier(0.22, 1, 0.36, 1);
+  --eon-motion-fast: 160ms;
+  --eon-motion-base: 220ms;
+  --eon-motion-slow: 320ms;
+  --eon-backdrop-blur: blur(22px);
+}
+
+html,
+body {
+  margin: 0;
+  color: var(--eon-semantic-text-primary);
+  background: var(--eon-semantic-surface-canvas);
+  font-family: var(--eon-font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html {
+  background:
+    radial-gradient(circle at top left, rgba(59, 130, 246, 0.09), transparent 28rem),
+    radial-gradient(circle at top right, rgba(14, 165, 233, 0.08), transparent 24rem),
+    linear-gradient(180deg, #fbfcfe 0%, #f4f7fb 100%);
+}
+
+body {
+  min-height: 100vh;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+::selection {
+  background: rgba(59, 130, 246, 0.18);
+}
+
+:focus-visible {
+  outline: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+    scroll-behavior: auto !important;
+  }
+}

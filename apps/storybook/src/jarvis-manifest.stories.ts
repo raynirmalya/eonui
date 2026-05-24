@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/web-components';
-import { componentLibrary } from '@jarvis/manifest';
+import { componentLibrary } from '@eonui/manifest';
 
 const manifestPreview = componentLibrary.slice(0, 12);
 
@@ -23,7 +23,7 @@ const meta: Meta = {
       <section style="display:grid;gap:1rem;max-width:72rem;">
         <header style="display:grid;gap:.5rem;">
           <p style="margin:0;color:#5a6472;text-transform:uppercase;font-size:.8rem;">Manifest-driven stories</p>
-          <h1 style="margin:0;">Jarvis Component Catalog</h1>
+          <h1 style="margin:0;">Eon Component Catalog</h1>
           <p style="margin:0;">This preview is generated from the source manifest registry and acts as the bridge into richer component stories.</p>
         </header>
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(16rem,1fr));gap:1rem;">

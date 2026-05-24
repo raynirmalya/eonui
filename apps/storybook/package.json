@@ -1,5 +1,5 @@
 {
-  "name": "@jarvis/storybook",
+  "name": "@eonui/storybook",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -13,7 +13,7 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@jarvis/manifest": "workspace:*"
+    "@eonui/manifest": "workspace:*"
   },
   "devDependencies": {
     "@storybook/web-components": "^8.6.14",

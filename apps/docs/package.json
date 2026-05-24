@@ -1,6 +1,6 @@
 {
-  "name": "@jarvis/docs",
-  "version": "0.1.0",
+  "name": "@eonui/docs",
+  "version": "0.1.1",
   "private": true,
   "type": "module",
   "scripts": {
@@ -11,14 +11,14 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@jarvis/a11y": "workspace:*",
-    "@jarvis/angular": "workspace:*",
-    "@jarvis/i18n": "workspace:*",
-    "@jarvis/manifest": "workspace:*",
-    "@jarvis/react": "workspace:*",
-    "@jarvis/styles": "workspace:*",
-    "@jarvis/vue": "workspace:*",
-    "@mystique/components": "workspace:*",
-    "@mystique/core": "workspace:*"
+    "@eonui/a11y": "workspace:*",
+    "@eonui/angular": "workspace:*",
+    "@eonui/i18n": "workspace:*",
+    "@eonui/manifest": "workspace:*",
+    "@eonui/react": "workspace:*",
+    "@eonui/styles": "workspace:*",
+    "@eonui/vue": "workspace:*",
+    "@eonui/charts": "workspace:*",
+    "@eonui/charts-core": "workspace:*"
   }
 }

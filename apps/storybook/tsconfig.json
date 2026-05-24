@@ -5,7 +5,7 @@
     "rootDir": "./src",
     "outDir": "./dist"
   },
-  "references": [{ "path": "../../packages/jarvis-manifest" }],
+  "references": [{ "path": "../../packages/eon-manifest" }],
   "include": ["src/**/*"],
   "exclude": ["src/**/*.test.ts"]
 }

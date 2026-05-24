@@ -1,19 +1,19 @@
 import { describe, expect, it } from 'vitest';
 import { publishablePackageNames, releaseChecklist, releaseCommands } from './index';
-import corePackage from '../../../packages/jarvis-core/package.json';
-import reactPackage from '../../../packages/jarvis-react/package.json';
-import angularPackage from '../../../packages/jarvis-angular/package.json';
-import vuePackage from '../../../packages/jarvis-vue/package.json';
-import manifestPackage from '../../../packages/jarvis-manifest/package.json';
-import aiPromptsPackage from '../../../packages/jarvis-ai-prompts/package.json';
+import corePackage from '../../../packages/eon-core/package.json';
+import reactPackage from '../../../packages/eon-react/package.json';
+import angularPackage from '../../../packages/eon-angular/package.json';
+import vuePackage from '../../../packages/eon-vue/package.json';
+import manifestPackage from '../../../packages/eon-manifest/package.json';
+import aiPromptsPackage from '../../../packages/eon-ai-prompts/package.json';
 import tokensPackage from '../../../packages/tokens/package.json';
 import stylesPackage from '../../../packages/styles/package.json';
 import a11yPackage from '../../../packages/a11y/package.json';
 import i18nPackage from '../../../packages/i18n/package.json';
-import mystiqueCorePackage from '../../../packages/mystique-core/package.json';
-import mystiqueSvgPackage from '../../../packages/mystique-svg/package.json';
-import mystiqueCanvasPackage from '../../../packages/mystique-canvas/package.json';
-import mystiqueComponentsPackage from '../../../packages/mystique-components/package.json';
+import mystiqueCorePackage from '../../../packages/eon-charts-core/package.json';
+import mystiqueSvgPackage from '../../../packages/eon-charts-svg/package.json';
+import mystiqueCanvasPackage from '../../../packages/eon-charts-canvas/package.json';
+import mystiqueComponentsPackage from '../../../packages/eon-charts/package.json';
 
 const publishablePackages = [
   corePackage,

@@ -1,5 +1,5 @@
-import { a11yGuide } from '@jarvis/a11y';
-import { i18nGuide } from '@jarvis/i18n';
+import { a11yGuide } from '@eonui/a11y';
+import { i18nGuide } from '@eonui/i18n';
 
 export const sharedGuides = {
   a11y: a11yGuide,
