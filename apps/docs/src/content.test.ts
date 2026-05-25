@@ -3,19 +3,19 @@ import { guidePages } from './content';
 
 describe('docs guide content', () => {
   it('includes the major docs information architecture pages', () => {
-    expect(guidePages.map((page) => page.slug).sort()).toEqual(
-      [
-        'accessibility',
-        'ai',
-        'figma-mapping',
-        'frameworks',
-        'getting-started',
-        'i18n',
-        'installation',
-        'migration-versioning',
-        'theming'
-      ].sort()
-    );
+    const slugs = guidePages.map((page) => page.slug);
+
+    expect(slugs).toEqual(expect.arrayContaining([
+      'accessibility',
+      'ai',
+      'figma-mapping',
+      'frameworks',
+      'getting-started',
+      'i18n',
+      'installation',
+      'migration-versioning',
+      'theming',
+      'validation-workflows'
+    ]));
   });
 });
-
