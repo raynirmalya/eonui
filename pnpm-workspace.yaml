@@ -1,5 +1,6 @@
 packages:
   - apps/docs
+  - apps/eonui-staging
   - apps/figma-mapper
   - apps/playground
   - apps/storybook

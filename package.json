@@ -6,6 +6,7 @@
     "build": "pnpm -r --workspace-concurrency=1 --filter \"@eonui/*\" build",
     "build:packages": "pnpm -r --workspace-concurrency=1 --filter \"@eonui/*\" build",
     "dev:docs": "pnpm build:packages && pnpm docs:generate && pnpm --filter @eonui/docs dev",
+    "dev:staging": "pnpm build:packages && pnpm docs:generate && pnpm --filter eonui-staging dev",
     "dev:storybook": "pnpm build:packages && pnpm docs:generate && pnpm --filter @eonui/storybook dev",
     "dev:playground": "pnpm build:packages && pnpm docs:generate && pnpm --filter @eonui/playground dev",
     "docs:generate": "pnpm --filter @eonui/manifest generate",

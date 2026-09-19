@@ -6,6 +6,8 @@ Eon UI is a production-oriented cross-framework design system platform built on 
 
 This public repository is the source of truth for the reusable EonUI package layer and the public development tooling that supports it.
 
+The public component explorer lives in `apps/eonui-staging` and runs against the packages in this workspace.
+
 Keep package and public-docs work here:
 
 - `packages/*`
@@ -18,7 +20,7 @@ Do not treat this repository as the home for private platform work. The followin
 - `eonui-private`
   Internal platform work, API planning, release helpers, and private integration surfaces.
 - `eonui-staging-private`
-  Local staging and component validation flows.
+  Private staging and component validation flows.
 - `eonui-marketing-private`
   Private marketing-site and product-story experiments.
 
@@ -43,3 +45,5 @@ pnpm dev:docs
 ```
 
 See [architecture overview](./docs/architecture/overview.md).
+
+To run the public component explorer, use `pnpm dev:staging` and open `http://127.0.0.1:4310`.

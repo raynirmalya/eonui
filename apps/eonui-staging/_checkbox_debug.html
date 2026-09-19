@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Checkbox Debug</title>
+    <link rel="stylesheet" href="/vendor/eonui-core/dist/eon/eon.css" />
+  </head>
+  <body>
+    <pre id="log">Loading...</pre>
+    <script type="module">
+      const log = document.querySelector('#log');
+
+      function write(value) {
+        const text = typeof value === 'string' ? value : JSON.stringify(value, null, 2);
+        document.title = text.slice(0, 120);
+        log.textContent = text;
+      }
+
+      try {
+        const { defineCustomElements } = await import('/vendor/eonui-core/dist/loader/index.js');
+
+        await defineCustomElements(window);
+
+        const checkbox = document.createElement('eon-checkbox');
+        checkbox.setAttribute('label', 'Debug checkbox');
+        checkbox.setAttribute('checked', '');
+        document.body.appendChild(checkbox);
+
+        await customElements.whenDefined('eon-checkbox');
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+
+        const input = checkbox.shadowRoot?.querySelector('input');
+        const indicator = checkbox.shadowRoot?.querySelector('.indicator');
+
+        write({
+          hostAttributes: checkbox.getAttributeNames().reduce((result, name) => {
+            result[name] = checkbox.getAttribute(name);
+            return result;
+          }, {}),
+          hostCheckedProperty: checkbox.checked,
+          hostIndeterminateProperty: checkbox.indeterminate,
+          inputChecked: input?.checked,
+          inputIndeterminate: input?.indeterminate,
+          inputAriaChecked: input?.getAttribute('aria-checked'),
+          indicatorClass: indicator?.getAttribute('class'),
+          indicatorBackground: indicator ? getComputedStyle(indicator).backgroundColor : null,
+          indicatorBorderColor: indicator ? getComputedStyle(indicator).borderColor : null,
+          adoptedStyleSheetCount: checkbox.shadowRoot?.adoptedStyleSheets?.length ?? null,
+          adoptedStyleSheets:
+            checkbox.shadowRoot?.adoptedStyleSheets
+              ? Array.from(checkbox.shadowRoot.adoptedStyleSheets).map((sheet, index) => ({
+                  index,
+                  ruleCount: sheet.cssRules.length,
+                  firstRules: Array.from(sheet.cssRules).slice(0, 6).map((rule) => rule.cssText),
+                }))
+              : [],
+          shadowHtml: checkbox.shadowRoot?.innerHTML,
+        });
+      } catch (error) {
+        write({
+          message: error instanceof Error ? error.message : String(error),
+          stack: error instanceof Error ? error.stack : null,
+        });
+      }
+    </script>
+  </body>
+</html>
